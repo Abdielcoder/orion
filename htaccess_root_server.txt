@@ -1,0 +1,40 @@
+# ============================================
+# .htaccess para la RAÍZ del servidor (/var/www/html/.htaccess)
+# Coloca este archivo en /var/www/html/.htaccess en tu servidor EC2
+# ============================================
+
+RewriteEngine On
+
+# Redirección principal: dominio raíz -> biblioteca
+RewriteCond %{REQUEST_URI} ^/$
+RewriteRule ^(.*)$ /biblioteca/public/index.php/auth/login [R=301,L]
+
+# Redirección: /biblioteca -> /biblioteca/public/index.php/auth/login
+RewriteCond %{REQUEST_URI} ^/biblioteca/?$
+RewriteRule ^(.*)$ /biblioteca/public/index.php/auth/login [R=301,L]
+
+# Redirección: /biblioteca/public -> /biblioteca/public/index.php/auth/login
+RewriteCond %{REQUEST_URI} ^/biblioteca/public/?$
+RewriteRule ^(.*)$ /biblioteca/public/index.php/auth/login [R=301,L]
+
+# Permitir acceso normal a archivos existentes
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Configuración de seguridad global
+ServerSignature Off
+Options -Indexes
+
+# Headers de seguridad
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options SAMEORIGIN
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Proteger archivos sensibles en todo el servidor
+<FilesMatch "\.(sql|md|sh|log|txt)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>

@@ -1,0 +1,56 @@
+# ============================================
+# .htaccess para Biblioteca Digital en AWS EC2
+# Redirección a: http://98.87.243.120/biblioteca/public/index.php
+# ============================================
+
+RewriteEngine On
+
+# Configuración de seguridad básica
+ServerSignature Off
+Options -Indexes
+
+# Redirecciones principales
+# Si acceden a la raíz del dominio, redirigir a biblioteca
+RewriteCond %{REQUEST_URI} ^/$
+RewriteRule ^(.*)$ /biblioteca/public/index.php/auth/login [R=301,L]
+
+# Si acceden a /biblioteca sin más, redirigir a public
+RewriteCond %{REQUEST_URI} ^/biblioteca/?$
+RewriteRule ^(.*)$ /biblioteca/public/index.php/auth/login [R=301,L]
+
+# Si acceden a /biblioteca/public sin index.php, añadirlo
+RewriteCond %{REQUEST_URI} ^/biblioteca/public/?$
+RewriteRule ^(.*)$ /biblioteca/public/index.php/auth/login [R=301,L]
+
+# Manejo de rutas internas (sin redirección externa)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/index.php [QSA,L]
+
+# Proteger archivos sensibles
+<Files "*.sql">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+<Files "*.md">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+<Files "*.sh">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+<Files "config.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Configuración para archivos grandes
+php_value upload_max_filesize 256M
+php_value post_max_size 256M
+php_value max_execution_time 300
+php_value max_input_time 300
+php_value memory_limit 512M
