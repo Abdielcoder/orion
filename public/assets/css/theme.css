@@ -1,0 +1,1048 @@
+/* ========================================
+   ORION DESIGN SYSTEM - Next Generation UI
+   ======================================== */
+
+:root {
+  /* Colores principales - Paleta futurista */
+  --primary-gradient: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+  --secondary-gradient: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  --accent-gradient: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  
+  /* Colores base */
+  --color-bg: #0a0e27;
+  --color-surface: rgba(255, 255, 255, 0.05);
+  --color-surface-hover: rgba(255, 255, 255, 0.08);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-text: #ffffff;
+  --color-text-muted: rgba(255, 255, 255, 0.7);
+  --color-text-dim: rgba(255, 255, 255, 0.5);
+  
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --glass-blur: blur(20px);
+  
+  /* Sombras y efectos */
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 30px rgba(74, 85, 104, 0.4);
+  
+  /* Bordes y espaciado */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  
+  /* Transiciones */
+  --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset y base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Fondo animado con gradiente */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, #0a0e27 0%, #1a1f3a 25%, #0a0e27 50%, #1a1f3a 75%, #0a0e27 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  z-index: -2;
+}
+
+/* Patrón de puntos */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: -1;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Glassmorphism cards */
+.card, .welcome-container, .login-container, .file-card, .modal, .preview-panel {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--glass-shadow) !important;
+  transition: var(--transition-base);
+}
+
+.card:hover, .welcome-container:hover, .login-container:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow) !important;
+  border-color: rgba(74, 85, 104, 0.3) !important;
+}
+
+/* Headers y navegación */
+.header, .toolbar, .breadcrumb {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.07) 50%, rgba(255, 255, 255, 0.03) 100%) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--glass-border) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Margen superior para separar del header */
+.toolbar {
+  margin-top: 10px !important;
+}
+
+.breadcrumb {
+  margin-top: 8px !important;
+}
+
+/* Títulos con gradiente */
+h1, h2, h3, .welcome-title, .app-title, .logo {
+  background: var(--primary-gradient) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+/* Inputs futuristas */
+input[type="text"], 
+input[type="password"], 
+input[type="email"], 
+input[type="search"], 
+textarea, 
+select, 
+.form-input {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 2px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--color-text) !important;
+  padding: 22px 26px !important;
+  margin-left: 2%;
+  font-size: 14px;
+  transition: var(--transition-fast);
+  backdrop-filter: blur(10px);
+}
+
+/* Inputs específicos del login - texto gris oscuro */
+.login-container input[type="text"],
+.login-container input[type="password"],
+.login-container input[type="email"],
+.login-container .form-input {
+  color: #4a5568 !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Inputs en modales - texto gris oscuro para mejor visibilidad */
+.modal input[type="text"],
+.modal input[type="password"],
+.modal input[type="email"],
+.modal input[type="search"],
+.modal input[type="number"],
+.modal input[type="url"],
+.modal textarea,
+.modal select,
+.modal .form-input,
+.modal-content input[type="text"],
+.modal-content input[type="password"],
+.modal-content input[type="email"],
+.modal-content input[type="search"],
+.modal-content input[type="number"],
+.modal-content input[type="url"],
+.modal-content textarea,
+.modal-content select,
+.modal-content .form-input,
+.preview-modal-content input,
+.preview-modal-content textarea,
+.preview-modal-content select,
+#sharing-modal input,
+#sharing-modal textarea,
+#sharing-modal select,
+.sharing-modal input,
+.sharing-modal textarea,
+.sharing-modal select,
+.form-group input,
+.form-group textarea,
+.form-group select {
+  color: #2d3748 !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  -webkit-text-fill-color: #2d3748 !important;
+}
+
+.modal input::placeholder,
+.modal textarea::placeholder,
+.modal-content input::placeholder,
+.modal-content textarea::placeholder,
+#sharing-modal input::placeholder,
+#sharing-modal textarea::placeholder,
+.sharing-modal input::placeholder,
+.sharing-modal textarea::placeholder,
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #9ca3af !important;
+  -webkit-text-fill-color: #9ca3af !important;
+}
+
+input:focus, 
+textarea:focus, 
+select:focus, 
+.form-input:focus {
+  outline: none !important;
+  border-color: #4a5568 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 0 0 3px rgba(74, 85, 104, 0.2), 0 0 20px rgba(74, 85, 104, 0.3) !important;
+}
+
+/* Focus específico para inputs en modales */
+.modal input:focus,
+.modal textarea:focus,
+.modal select:focus,
+.modal-content input:focus,
+.modal-content textarea:focus,
+.modal-content select:focus,
+#sharing-modal input:focus,
+#sharing-modal textarea:focus,
+#sharing-modal select:focus,
+.sharing-modal input:focus,
+.sharing-modal textarea:focus,
+.sharing-modal select:focus,
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  background: rgba(255, 255, 255, 1) !important;
+  border-color: #4a90e2 !important;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2) !important;
+  color: #2d3748 !important;
+  -webkit-text-fill-color: #2d3748 !important;
+}
+
+input::placeholder {
+  color: var(--color-text-dim) !important;
+}
+
+/* Placeholder específico para login */
+.login-container input::placeholder {
+  color: #a0aec0 !important;
+}
+
+/* Botones next-gen */
+.btn, button, .action-btn, .login-button {
+  position: relative;
+  padding: 12px 24px !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: var(--transition-base);
+  overflow: hidden;
+  border: none !important;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.btn::before, button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+  z-index: -1;
+}
+
+.btn:hover::before, button:hover::before {
+  transform: translateX(100%);
+}
+
+/* Variantes de botón con gradientes */
+.btn-primary, .action-btn.btn-primary, .login-button, button.primary {
+  background: var(--primary-gradient) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(74, 85, 104, 0.4) !important;
+}
+
+.btn-primary:hover, .login-button:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 6px 25px rgba(74, 85, 104, 0.6) !important;
+}
+
+.btn-secondary, .action-btn.btn-secondary, button.secondary {
+  background: rgba(100, 100, 100, 0.3) !important;
+  color: var(--color-text) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: none;
+  box-shadow: none !important;
+}
+
+.btn-secondary:hover {
+  background: rgba(100, 100, 100, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: none !important;
+}
+
+.btn-success, .action-btn.btn-success {
+  background: var(--success-gradient) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(67, 233, 123, 0.4) !important;
+}
+
+.btn-danger, .action-btn.btn-danger {
+  background: var(--danger-gradient) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4) !important;
+}
+
+/* Tablas y listas modernas */
+.list-item, .column-item, .grid-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  transition: var(--transition-fast);
+  border-radius: var(--radius-sm);
+  margin-bottom: 4px;
+}
+
+.list-item:hover, .column-item:hover, .grid-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: var(--glass-border) !important;
+  transform: translateX(4px);
+}
+
+.list-item.selected, .column-item.selected, .grid-item.selected {
+  background: linear-gradient(90deg, rgba(74, 85, 104, 0.2), rgba(74, 85, 104, 0.1)) !important;
+  border-left: 3px solid #4a5568 !important;
+}
+
+/* Iconos sin glow */
+.fas, .far, .fab, i[class*="fa-"] {
+  filter: none;
+  transition: var(--transition-fast);
+}
+
+.fas:hover, i[class*="fa-"]:hover {
+  opacity: 0.8;
+}
+
+/* Badges y etiquetas */
+.label, .badge, .status-badge, .role-badge {
+  padding: 4px 12px !important;
+  border-radius: 20px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  background: var(--accent-gradient) !important;
+  color: white !important;
+  box-shadow: 0 2px 10px rgba(79, 172, 254, 0.3) !important;
+}
+
+/* Scrollbars personalizadas */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #4a5568, #2d3748);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #2d3748, #4a5568);
+  background-clip: padding-box;
+}
+
+/* Modales con efecto blur */
+.modal-overlay {
+  background: rgba(10, 14, 39, 0.8) !important;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.modal-content, .preview-modal-content {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Tooltips modernos */
+[title] {
+  position: relative;
+}
+
+[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; transform: translateX(-50%) translateY(-5px); }
+}
+
+/* Loading animations */
+.loading, .preview-modal-loading {
+  background: linear-gradient(90deg, rgba(74, 85, 104, 0.1), rgba(74, 85, 104, 0.3), rgba(74, 85, 104, 0.1));
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Spinner moderno */
+.fa-spinner, .loading-spinner {
+  animation: spin 1s linear infinite;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Context menu futurista */
+.context-menu {
+  background: rgba(20, 24, 45, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden;
+  color: #ffffff !important;
+}
+
+.context-menu-item {
+  padding: 10px 16px !important;
+  transition: var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  color: #ffffff !important;
+}
+
+.context-menu-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(74, 85, 104, 0.3), transparent);
+  transition: left 0.3s;
+}
+
+.context-menu-item:hover {
+  background: rgba(74, 85, 104, 0.2) !important;
+  padding-left: 20px !important;
+}
+
+.context-menu-item:hover::before {
+  left: 100%;
+}
+
+/* File icons con colores vibrantes - sin !important para permitir override */
+.fa-folder { color: #4facfe; } /* Color por defecto, se puede override con estilos inline */
+.fa-file { color: #43e97b; }
+.fa-file-pdf { color: #fa709a; }
+.fa-file-word { color: #667eea; }
+.fa-file-excel { color: #38f9d7; }
+.fa-file-image { color: #f093fb; }
+.fa-file-video { color: #fee140; }
+.fa-file-audio { color: #00f2fe; }
+.fa-file-archive { color: #764ba2; }
+
+/* Los estilos inline de etiquetas tienen prioridad natural sin !important */
+
+/* Animación de entrada */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card, .modal, .context-menu {
+  animation: slideInUp 0.3s ease-out;
+}
+
+/* Efectos hover avanzados */
+.hover-lift {
+  transition: var(--transition-base);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(74, 85, 104, 0.3);
+}
+
+/* Breadcrumb moderno */
+.breadcrumb {
+  padding: 12px 20px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  backdrop-filter: blur(10px);
+}
+
+.breadcrumb a {
+  color: var(--color-text-muted) !important;
+  text-decoration: none;
+  transition: var(--transition-fast);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.breadcrumb a:hover {
+  color: var(--color-text) !important;
+  background: rgba(74, 85, 104, 0.2);
+}
+
+.breadcrumb .sep {
+  color: var(--color-text-dim) !important;
+  margin: 0 8px;
+}
+
+/* Upload area futurista */
+.upload-area {
+  border: 2px dashed var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  transition: var(--transition-base);
+}
+
+.upload-area.drag-over {
+  border-color: #4a5568 !important;
+  background: rgba(74, 85, 104, 0.1) !important;
+  box-shadow: 0 0 30px rgba(74, 85, 104, 0.3) inset !important;
+}
+
+/* Progress bars */
+.upload-progress, .quota-bar {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+  position: relative;
+}
+
+.upload-progress-bar, .quota-fill {
+  background: var(--primary-gradient) !important;
+  height: 100%;
+  transition: width 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 1s infinite;
+}
+
+/* Sidebar moderna */
+.sidebar {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.05)) !important;
+  border-right: 1px solid var(--glass-border) !important;
+}
+
+.tree-item {
+  padding: 10px 16px !important;
+  margin: 2px 8px !important;
+  border-radius: var(--radius-sm) !important;
+  transition: var(--transition-fast);
+}
+
+.tree-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  transform: translateX(4px);
+}
+
+.tree-item.active {
+  background: linear-gradient(90deg, rgba(74, 85, 104, 0.3), transparent) !important;
+  border-left: 3px solid #4a5568 !important;
+}
+
+/* Mensajes y alertas */
+.message, .alert {
+  padding: 16px 20px !important;
+  border-radius: var(--radius-md) !important;
+  backdrop-filter: blur(10px);
+  animation: slideInUp 0.3s ease-out;
+}
+
+.message.success, .alert-success {
+  background: linear-gradient(135deg, rgba(67, 233, 123, 0.2), rgba(56, 249, 215, 0.2)) !important;
+  border: 1px solid rgba(67, 233, 123, 0.5) !important;
+  color: #43e97b !important;
+}
+
+.message.error, .alert-danger {
+  background: linear-gradient(135deg, rgba(250, 112, 154, 0.2), rgba(254, 225, 64, 0.2)) !important;
+  border: 1px solid rgba(250, 112, 154, 0.5) !important;
+  color: #fa709a !important;
+}
+
+.message.info {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.2)) !important;
+  border: 1px solid rgba(79, 172, 254, 0.5) !important;
+  color: #4facfe !important;
+}
+
+/* Footer */
+.footer, .footer-info {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--glass-border) !important;
+  color: var(--color-text-dim) !important;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* OVERRIDE FINAL - Forzar texto gris oscuro en TODOS los inputs de modales */
+body .modal input,
+body .modal textarea,
+body .modal select,
+body .modal-content input,
+body .modal-content textarea,
+body .modal-content select,
+body #sharing-modal input,
+body #sharing-modal textarea,
+body #sharing-modal select,
+body .sharing-form input,
+body .sharing-form textarea,
+body .sharing-form select,
+body .form-group input[type="text"],
+body .form-group input[type="password"],
+body .form-group input[type="email"],
+body .form-group input[type="search"],
+body .form-group input[type="number"],
+body .form-group input[type="url"],
+body .form-group textarea,
+body .form-group select,
+body .link-modal input,
+body .link-modal textarea,
+body .link-modal select,
+body #link-modal-overlay input,
+body #link-modal-overlay textarea,
+body #link-modal-overlay select,
+body .link-container input,
+body .code-container input,
+body .link-modal-body input,
+body .link-modal-body textarea,
+body .link-modal-body select,
+input#link-url,
+input#access-code {
+  color: #2d3748 !important;
+  -webkit-text-fill-color: #2d3748 !important;
+  background-color: white !important;
+  background: white !important;
+  opacity: 1 !important;
+}
+
+/* Asegurar que el texto del input sea siempre visible */
+.link-container input[value],
+.code-container input[value],
+input#link-url[value],
+input#access-code[value] {
+  color: #1a202c !important;
+  -webkit-text-fill-color: #1a202c !important;
+}
+
+/* Forzar visibilidad del texto en inputs no vacíos */
+.link-container input:not(:placeholder-shown),
+.code-container input:not(:placeholder-shown),
+input#link-url:not(:placeholder-shown),
+input#access-code:not(:placeholder-shown) {
+  color: #1a202c !important;
+  -webkit-text-fill-color: #1a202c !important;
+}
+
+/* Modal de enlace compartido - Fondo claro */
+.link-modal {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.link-modal-header {
+  background: #f9fafb !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.link-modal-body {
+  background: #ffffff !important;
+}
+
+.link-modal-footer {
+  background: #f9fafb !important;
+  border-top: 1px solid #e5e7eb !important;
+}
+
+/* Colores de texto legibles para el modal de enlace */
+.link-modal-header h3 {
+  color: #2d3748 !important;
+  font-weight: 600 !important;
+}
+
+.link-item-name {
+  color: #2d3748 !important;
+  font-weight: 600 !important;
+}
+
+.link-item-type {
+  color: #6b7280 !important;
+}
+
+.link-section label,
+.access-code-section label {
+  color: #2d3748 !important;
+  font-weight: 600 !important;
+}
+
+.permission-item span {
+  color: #6b7280 !important;
+}
+
+.permission-item strong {
+  color: #2d3748 !important;
+  font-weight: 600 !important;
+}
+
+.access-code-note span {
+  color: #6b7280 !important;
+}
+
+/* Papelera mejorada para todas las vistas */
+.trash-bin {
+  position: fixed !important;
+  bottom: 30px !important;
+  right: 30px !important;
+  width: 70px !important;
+  height: 70px !important;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(185, 28, 28, 0.9)) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 2px solid rgba(239, 68, 68, 0.3) !important;
+  border-radius: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  z-index: 1000 !important;
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3) !important;
+}
+
+.trash-bin:hover {
+  transform: scale(1.1) translateY(-5px) !important;
+  box-shadow: 0 15px 40px rgba(239, 68, 68, 0.5) !important;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 1), rgba(185, 28, 28, 1)) !important;
+}
+
+.trash-bin.drag-over {
+  transform: scale(1.2) !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  border-color: #dc2626 !important;
+  animation: pulse 0.5s infinite !important;
+}
+
+.trash-bin i {
+  font-size: 28px !important;
+  color: #ffffff !important;
+  transition: all 0.3s !important;
+}
+
+.trash-bin:hover i {
+  color: #ffffff !important;
+  transform: rotate(-10deg) !important;
+}
+
+.trash-bin.drag-over i {
+  color: #ffffff !important;
+  animation: shake 0.3s infinite !important;
+}
+
+/* Tooltip de la papelera */
+.trash-tooltip {
+  position: absolute !important;
+  bottom: 85px !important;
+  right: 50% !important;
+  transform: translateX(50%) !important;
+  background: rgba(0, 0, 0, 0.9) !important;
+  color: #ffffff !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  white-space: nowrap !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.3s !important;
+}
+
+.trash-bin:hover .trash-tooltip {
+  opacity: 1 !important;
+}
+
+.trash-tooltip::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  border: 5px solid transparent !important;
+  border-top-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1.2); }
+  50% { transform: scale(1.3); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  :root {
+    --radius-lg: 16px;
+    --radius-md: 12px;
+  }
+  
+  .card, .modal-content {
+    border-radius: var(--radius-md) !important;
+  }
+  
+  body {
+    font-size: 14px;
+  }
+}
+
+/* Modo claro override (deshabilitado para mantener tema oscuro) */
+@media (prefers-color-scheme: light) {
+  /* Mantener tema oscuro siempre */
+}
+
+/* Animaciones adicionales */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+.bounce {
+  animation: bounce 1s infinite;
+}
+
+/* ==============================
+   Cloud UI 2.0 – Overrides globales
+   Sin cambiar funcionalidad, solo apariencia
+   ============================== */
+
+/* Paleta base clara y tipografía legible */
+body {
+  background: #f6f8fb !important;
+  color: #1f2937 !important;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji" !important;
+}
+
+.card, .welcome-container, .login-container, .file-card, .modal, .preview-panel {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 30px rgba(17, 24, 39, 0.06) !important;
+}
+
+/* Header y toolbar flotantes con blur sutil */
+.header, .toolbar, .breadcrumb {
+  background: rgba(255, 255, 255, 0.8) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-color: #e5e7eb !important;
+}
+
+/* Botones neutrales elegantes */
+.btn, button, .action-btn, .login-button {
+  border-radius: 12px !important;
+  padding: 10px 18px !important;
+  font-weight: 600 !important;
+}
+
+.btn-primary, .action-btn.btn-primary, .login-button, button.primary {
+  background: linear-gradient(135deg, #111827 0%, #374151 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(17, 24, 39, 0.25) !important;
+}
+
+.btn-primary:hover, .login-button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.28) !important;
+}
+
+.btn-secondary, .action-btn.btn-secondary, button.secondary {
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: none !important;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb !important;
+}
+
+/* Inputs minimalistas accesibles */
+input[type="text"], input[type="password"], input[type="email"], input[type="search"], textarea, select, .form-input {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #111827 !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 0 rgba(17,24,39,0.02) inset !important;
+}
+
+input:focus, textarea:focus, select:focus, .form-input:focus {
+  border-color: #111827 !important;
+  box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.1) !important;
+  background: #ffffff !important;
+}
+
+/* Lista y tarjetas de archivos: aire y jerarquía visual */
+.file-card, .grid-item, .list-item {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 14px !important;
+  transition: transform .15s ease, box-shadow .15s ease !important;
+}
+
+.file-card:hover, .grid-item:hover, .list-item:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 12px 30px rgba(17, 24, 39, 0.12) !important;
+  border-color: #d1d5db !important;
+}
+
+/* Sidebar limpio */
+.sidebar {
+  background: #ffffff !important;
+  border-right: 1px solid #e5e7eb !important;
+}
+
+.tree-item.active {
+  background: #1118270a !important;
+  border-left: 3px solid #111827 !important;
+}
+
+/* Badges y labels - mantener colores funcionales */
+.label, .badge, .status-badge, .role-badge {
+  /* Solo aplicar estilos base, mantener colores inline */
+  padding: 4px 12px !important;
+  border-radius: 20px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Zona de drag & drop moderna */
+.upload-area {
+  background: #f9fafb !important;
+  border: 2px dashed #d1d5db !important;
+}
+
+.upload-area.drag-over {
+  background: #eef2f7 !important;
+  border-color: #111827 !important;
+  box-shadow: 0 0 0 4px rgba(17,24,39,0.08) inset !important;
+}
+
+/* Mensajes de estado legibles */
+.message.success { background: #ecfdf5 !important; color: #065f46 !important; border-color: #a7f3d0 !important; }
+.message.error   { background: #fef2f2 !important; color: #991b1b !important; border-color: #fecaca !important; }
+.message.info    { background: #eff6ff !important; color: #1d4ed8 !important; border-color: #bfdbfe !important; }
+
+/* Íconos sobrios - respetar colores inline de carpetas */
+.fas, .far, .fab, i[class*="fa-"] { color: #374151; } /* Sin !important para permitir override con estilos inline */

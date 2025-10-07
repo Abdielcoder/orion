@@ -1,0 +1,40 @@
+graph TD
+    A[Usuario Administrador] --> B[Dashboard Principal]
+    B --> C[Botón Administración ⚙️]
+    C --> D[Menú Dropdown]
+    D --> E[Gestión de Usuarios]
+    D --> F[Información del Sistema]
+    
+    E --> G[Panel de Administración]
+    G --> H[Crear Usuario]
+    G --> I[Editar Usuario]
+    G --> J[Activar/Desactivar]
+    G --> K[Eliminar Usuario]
+    G --> L[Búsqueda y Filtros]
+    
+    H --> M[Asignar Rol]
+    I --> M
+    
+    M --> N[Admin<br/>Control total del sistema]
+    M --> O[Owner<br/>Propietario de archivos]
+    M --> P[Editor<br/>Modificar contenido]
+    M --> Q[Commenter<br/>Solo comentarios]
+    M --> R[Viewer<br/>Solo lectura]
+    
+    N --> S[Permisos: Crear, Leer, Actualizar, Eliminar, Administrar]
+    O --> T[Permisos: Transferir propiedad, Compartir, Administrar carpetas]
+    P --> U[Permisos: Crear, Editar, Eliminar archivos]
+    Q --> V[Permisos: Leer, Comentar]
+    R --> W[Permisos: Solo leer]
+    
+    G --> X[Base de Datos]
+    X --> Y[Tabla usuarios<br/>roles actualizados]
+    X --> Z[Tabla roles_sistema<br/>definiciones de permisos]
+    X --> AA[Tabla auditoria_roles<br/>registro de cambios]
+    
+    style A fill:#e1f5fe
+    style N fill:#ffcdd2
+    style O fill:#e1bee7
+    style P fill:#bbdefb
+    style Q fill:#fff9c4
+    style R fill:#f3e5f5
