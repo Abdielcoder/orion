@@ -17,16 +17,21 @@ $config = require __DIR__ . '/../config/config.php';
 // Incluir configuración de límites PHP para archivos grandes
 require_once __DIR__ . '/../config/php_limits.php';
 
-// Iniciar sesión segura
+// Iniciar sesión segura con configuración extendida para uploads largos
 session_name($config['session']['name']);
 session_set_cookie_params([
-    'lifetime' => $config['session']['lifetime'],
+    'lifetime' => 7200, // 2 horas para uploads largos
     'path' => '/',
     'domain' => '',
     'secure' => $config['session']['cookie_secure'],
     'httponly' => $config['session']['cookie_httponly'],
     'samesite' => $config['session']['cookie_samesite'],
 ]);
+
+// Configurar parámetros de sesión antes de iniciar
+ini_set('session.gc_maxlifetime', 7200); // 2 horas
+ini_set('session.cookie_lifetime', 7200); // 2 horas
+
 session_start();
 
 // Seguridad básica de headers

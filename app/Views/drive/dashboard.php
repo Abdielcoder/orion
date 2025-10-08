@@ -823,22 +823,24 @@
     .admin-menu { position: relative; display: inline-block; margin-left: 0; z-index: 100000; }
     
     .btn-admin { 
-      background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%) !important;
+      background: linear-gradient(135deg, #1e3a8a 0%, #0b2a6f 100%) !important; /* azul oscuro */
       border: none !important;
       padding: 8px 16px !important;
       border-radius: 10px !important;
-      box-shadow: 0 2px 8px rgba(236, 72, 153, 0.25) !important;
+      box-shadow: 0 2px 8px rgba(30, 64, 175, 0.35) !important;
       transition: all 0.2s ease !important;
       font-weight: 600 !important;
+      color: #ffffff !important;
     }
     
     .btn-admin:hover { 
-      background: linear-gradient(135deg, #db2777 0%, #dc2626 100%) !important;
-      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.35) !important;
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%) !important; /* variación azul al hover */
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.45) !important;
       transform: translateY(-2px) !important;
     }
     
     .btn-admin i {
+      color: #ffffff !important; /* icono blanco */
       animation: rotate 2s linear infinite;
     }
     
@@ -1298,6 +1300,168 @@
     body.light-theme .system-modal { background: #fff; border-color: #e5e7eb; }
     body.light-theme .system-modal-header { border-bottom-color: #e5e7eb; }
     body.light-theme .system-modal-body { color: #111827; }
+
+    /* Delete Confirmation Modal */
+    .delete-modal-overlay { 
+      position: fixed; 
+      inset: 0; 
+      background: rgba(0,0,0,0.7); 
+      z-index: 999999 !important; 
+      display: none; 
+      align-items: center; 
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+    .delete-modal { 
+      background: linear-gradient(135deg, #1e1e1e 0%, #2d2d30 100%);
+      border: 1px solid #3e3e42; 
+      border-radius: 16px; 
+      width: 90%; 
+      max-width: 420px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+      overflow: hidden; 
+      position: relative; 
+      z-index: 1000000 !important;
+      animation: modalSlideIn 0.3s ease-out;
+    }
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: scale(0.9) translateY(-20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .delete-modal-header { 
+      padding: 24px 24px 16px; 
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .delete-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .delete-icon i {
+      font-size: 24px;
+      color: #fff;
+    }
+    .delete-modal-header h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .delete-modal-body { 
+      padding: 20px 24px; 
+      text-align: center;
+    }
+    .delete-modal-body p {
+      margin: 0 0 16px;
+      color: #e5e7eb;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .delete-warning {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 8px;
+      color: #fca5a5;
+      font-size: 14px;
+    }
+    .delete-warning i {
+      color: #ef4444;
+    }
+    .delete-modal-footer { 
+      padding: 16px 24px 24px; 
+      display: flex; 
+      gap: 12px;
+      justify-content: center;
+    }
+    .btn-cancel, .btn-delete {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      min-width: 120px;
+      justify-content: center;
+    }
+    .btn-cancel {
+      background: #374151;
+      color: #d1d5db;
+      border: 1px solid #4b5563;
+    }
+    .btn-cancel:hover {
+      background: #4b5563;
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .btn-delete {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    .btn-delete i {
+      color: #fff !important;
+    }
+    .btn-delete:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    }
+    .btn-delete:active {
+      transform: translateY(0);
+    }
+    
+    /* Light theme overrides */
+    body.light-theme .delete-modal {
+      background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+      border-color: #e5e7eb;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.05);
+    }
+    body.light-theme .delete-modal-header {
+      border-bottom-color: #e5e7eb;
+    }
+    body.light-theme .delete-modal-header h3 {
+      color: #111827;
+    }
+    body.light-theme .delete-modal-body p {
+      color: #374151;
+    }
+    body.light-theme .delete-warning {
+      background: rgba(239, 68, 68, 0.05);
+      border-color: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+    }
+    body.light-theme .btn-cancel {
+      background: #f3f4f6;
+      color: #374151;
+      border-color: #d1d5db;
+    }
+    body.light-theme .btn-cancel:hover {
+      background: #e5e7eb;
+      color: #111827;
+    }
 
     /* Icon Picker */
     .icon-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 8px 0; }
@@ -2125,6 +2289,35 @@
     </div>
   </div>
 
+  <!-- Delete Confirmation Modal -->
+  <div class="delete-modal-overlay" id="delete-modal-overlay">
+    <div class="delete-modal" id="delete-modal">
+      <div class="delete-modal-header">
+        <div class="delete-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3>Confirmar Eliminación</h3>
+      </div>
+      <div class="delete-modal-body">
+        <p id="delete-modal-message">¿Estás seguro de que quieres eliminar este elemento?</p>
+        <div class="delete-warning">
+          <i class="fas fa-info-circle"></i>
+          <span>Esta acción no se puede deshacer</span>
+        </div>
+      </div>
+      <div class="delete-modal-footer">
+        <button class="btn-cancel" onclick="closeDeleteModal()">
+          <i class="fas fa-times"></i>
+          <span>Cancelar</span>
+        </button>
+        <button class="btn-delete" onclick="confirmDelete()">
+          <i class="fas fa-trash"></i>
+          <span>Eliminar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal de Vista Previa Expandida -->
   <div class="preview-modal" id="previewModal" style="display: none;">
     <div class="preview-modal-overlay" onclick="closePreviewModal()"></div>
@@ -2301,6 +2494,9 @@
       
       // Load storage quota information
       loadStorageQuota();
+      
+      // Renovar CSRF token automáticamente cada 30 minutos
+      setInterval(refreshCsrfToken, 30 * 60 * 1000); // 30 minutos
     });
 
     function setupEventListeners() {
@@ -3667,6 +3863,32 @@
 
     function showSuccess(msg) { openSystemModal(msg, 'success'); }
     function showError(msg) { openSystemModal(msg, 'error'); }
+
+    // Delete Confirmation Modal Functions
+    let deleteCallback = null;
+    let deleteItemElement = null;
+
+    function openDeleteModal(itemName, itemType, callback, itemElement) {
+      deleteCallback = callback;
+      deleteItemElement = itemElement;
+      
+      const message = `¿Estás seguro de que quieres eliminar ${itemType} "${itemName}"?`;
+      document.getElementById('delete-modal-message').textContent = message;
+      document.getElementById('delete-modal-overlay').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('delete-modal-overlay').style.display = 'none';
+      deleteCallback = null;
+      deleteItemElement = null;
+    }
+
+    function confirmDelete() {
+      if (deleteCallback && deleteItemElement) {
+        deleteCallback(deleteItemElement);
+      }
+      closeDeleteModal();
+    }
     function showInfo(msg) { openSystemModal(msg, 'info'); }
 
     
@@ -4054,6 +4276,7 @@ ${percentage >= 90 ? '⚠️ Considera eliminar archivos innecesarios o contacta
     document.addEventListener('click', function(event) {
       const sharingModal = document.getElementById('sharing-modal');
       const linkModal = document.getElementById('link-modal-overlay');
+      const deleteModal = document.getElementById('delete-modal-overlay');
       
       if (event.target === sharingModal) {
         closeSharingModal();
@@ -4061,6 +4284,10 @@ ${percentage >= 90 ? '⚠️ Considera eliminar archivos innecesarios o contacta
       
       if (event.target === linkModal) {
         closeLinkModal();
+      }
+      
+      if (event.target === deleteModal) {
+        closeDeleteModal();
       }
     });
 
@@ -4154,8 +4381,105 @@ ${percentage >= 90 ? '⚠️ Considera eliminar archivos innecesarios o contacta
               updateUploadProgressCard(uploadId, 'error', 0, 'Error al procesar respuesta del servidor');
               reject(new Error('Error al procesar respuesta del servidor'));
             }
+          } else if (xhr.status === 419) {
+            // Error de CSRF token - renovar y reintentar
+            console.warn('CSRF token expirado, renovando...');
+            updateUploadProgressCard(uploadId, 'uploading', 0, 'Renovando token de seguridad...');
+            
+            // Renovar CSRF token
+            fetch('/biblioteca/public/index.php/drive/dashboard')
+              .then(response => response.text())
+              .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newCsrf = doc.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                if (newCsrf) {
+                  csrf = newCsrf;
+                  console.log('CSRF token renovado, reintentando upload...');
+                  // Reintentar el upload con el nuevo token
+                  uploadFileWithRetry(file, uploadId, 1);
+                } else {
+                  updateUploadProgressCard(uploadId, 'error', 0, 'Error: No se pudo renovar el token de seguridad');
+                  reject(new Error('No se pudo renovar CSRF token'));
+                }
+              })
+              .catch(error => {
+                console.error('Error renovando CSRF token:', error);
+                updateUploadProgressCard(uploadId, 'error', 0, 'Error: No se pudo renovar el token de seguridad');
+                reject(error);
+              });
           } else {
             console.error('HTTP error:', xhr.status, xhr.responseText);
+            updateUploadProgressCard(uploadId, 'error', 0, `Error HTTP: ${xhr.status}`);
+            reject(new Error('Error HTTP: ' + xhr.status));
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          updateUploadProgressCard(uploadId, 'error', 0, 'Error de conexión');
+          reject(new Error('Network error'));
+        });
+
+        xhr.open('POST', '/biblioteca/public/index.php/drive/upload');
+        xhr.send(formData);
+      });
+    }
+
+    // Función para reintentar upload después de renovar CSRF token
+    function uploadFileWithRetry(file, uploadId, retryCount = 1) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const formData = new FormData();
+        
+        formData.append('_csrf', csrf);
+        formData.append('folder_id', currentFolder);
+        formData.append('file', file);
+
+        updateUploadProgressCard(uploadId, 'uploading', 0, `Reintentando subida... (${retryCount}/2)`);
+
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            updateUploadProgressCard(uploadId, 'uploading', percent, `Subiendo... ${percent}%`);
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200) {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              if (data.ok) {
+                loadStorageQuota();
+                updateUploadProgressCard(uploadId, 'success', 100, 'Archivo subido exitosamente');
+                
+                const icon = getFileIcon(file.type);
+                const gridItem = createGridItem('file', data.id, file.name, icon, null, null, null);
+                const listItem = createListItem('file', data.id, file.name, file.type || 'Archivo', '', '', null, null, null);
+                
+                if (currentView === 'grid') {
+                  document.getElementById('grid-view').appendChild(gridItem);
+                } else if (currentView === 'list') {
+                  document.getElementById('list-content').appendChild(listItem);
+                }
+                
+                setTimeout(() => {
+                  removeUploadProgressCard(uploadId);
+                }, 3000);
+                
+                resolve(data);
+              } else {
+                updateUploadProgressCard(uploadId, 'error', 0, data.error || 'Error al subir archivo');
+                reject(new Error(data.error || 'Error al subir archivo'));
+              }
+            } catch (e) {
+              updateUploadProgressCard(uploadId, 'error', 0, 'Error al procesar respuesta del servidor');
+              reject(new Error('Error al procesar respuesta del servidor'));
+            }
+          } else if (xhr.status === 419 && retryCount < 2) {
+            // Segundo intento fallido, dar por perdido
+            updateUploadProgressCard(uploadId, 'error', 0, 'Token de seguridad expirado. Por favor, recarga la página.');
+            reject(new Error('CSRF token expirado después de reintento'));
+          } else {
             updateUploadProgressCard(uploadId, 'error', 0, `Error HTTP: ${xhr.status}`);
             reject(new Error('Error HTTP: ' + xhr.status));
           }
@@ -4984,9 +5308,7 @@ ${percentage >= 90 ? '⚠️ Considera eliminar archivos innecesarios o contacta
       const itemName = getItemName(item);
       const itemType = item.dataset.type === 'folder' ? 'carpeta' : 'archivo';
       
-      if (confirm(`¿Estás seguro de que quieres eliminar ${itemType} "${itemName}"?`)) {
-        deleteItem(item);
-      }
+      openDeleteModal(itemName, itemType, deleteItem, item);
     }
 
     function showMultipleDeleteConfirmation(items) {

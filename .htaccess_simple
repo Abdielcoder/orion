@@ -1,0 +1,3 @@
+# Versión simplificada para AWS EC2
+RewriteEngine On
+RewriteRule ^$ public/index.php/auth/login [L]
