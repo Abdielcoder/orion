@@ -42,6 +42,18 @@
     body.light-theme .header .btn.success:hover {
       background: #059669;
     }
+    body.light-theme .header .btn.primary {
+      background: #1e3a8a;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+    }
+    body.light-theme .header .btn.primary:hover {
+      background: #1e40af;
+      color: #ffffff;
+    }
+    body.light-theme .header .btn.primary i {
+      color: #ffffff;
+    }
 
     body.light-theme .main { background: transparent; }
     body.light-theme .sidebar { 
@@ -166,6 +178,17 @@
     }
     .header .btn.success:hover {
       background: #059669;
+    }
+    .header .btn.primary {
+      background: #1e3a8a;
+      color: #ffffff;
+    }
+    .header .btn.primary:hover {
+      background: #1e40af;
+      color: #ffffff;
+    }
+    .header .btn.primary i {
+      color: #ffffff;
     }
     .header .btn i { 
       width: 16px; 
@@ -463,74 +486,110 @@
     .action-btn.delete { color: #ef4444; }
     .action-btn.toggle { color: #059669; }
     
-    /* Modal */
+    /* Modal - Glassmorphism con fondo transparente y blur */
     .modal { 
-      display: none; 
       position: fixed; 
-      z-index: 1000; 
-      left: 0; 
-      top: 0; 
-      width: 100%; 
-      height: 100%; 
-      background: rgba(0,0,0,0.7); 
+      inset: 0; 
+      background: rgba(0, 0, 0, 0.4); 
+      z-index: 999999 !important; 
+      display: none; 
+      align-items: center; 
+      justify-content: center;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
     .modal-content { 
-      background: #2d2d30; 
-      border: 1px solid #3e3e42; 
-      margin: 5% auto; 
-      border-radius: 4px; 
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2); 
+      border-radius: 20px; 
       width: 90%; 
-      max-width: 500px; 
+      max-width: 520px; 
       max-height: 90vh; 
       overflow-y: auto; 
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      position: relative;
+      z-index: 1000000 !important;
+      animation: modalSlideIn 0.3s ease-out;
+    }
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
     .modal-header { 
-      padding: 12px; 
-      border-bottom: 1px solid #3e3e42; 
+      padding: 24px 24px 16px; 
+      border-bottom: 1px solid rgba(255,255,255,0.1); 
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
     }
-    .modal-header h3 { margin: 0; color: #cccccc; font-size: 14px; }
-    .modal-body { padding: 12px; }
+    .modal-header h3 { 
+      margin: 0; 
+      color: #fff; 
+      font-size: 20px; 
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .modal-body { padding: 20px 24px; }
     .modal-footer { 
-      padding: 12px; 
-      border-top: 1px solid #3e3e42; 
+      padding: 16px 24px 24px; 
+      border-top: 1px solid rgba(255,255,255,0.05);
       display: flex; 
       justify-content: flex-end; 
-      gap: 8px; 
+      gap: 12px; 
     }
     
-    .form-group { margin-bottom: 12px; }
+    .form-group { margin-bottom: 16px; }
     .form-group label { 
       display: block; 
-      margin-bottom: 4px; 
-      font-weight: 600; 
-      color: #cccccc; 
-      font-size: 12px; 
+      margin-bottom: 6px; 
+      font-weight: 500; 
+      color: #e5e7eb; 
+      font-size: 14px; 
     }
-    .form-group input, .form-group select { 
+    .form-group input, .form-group select, .form-group textarea { 
       width: 100%; 
-      padding: 6px 8px; 
-      background: #37373d; 
-      border: 1px solid #3e3e42; 
-      color: #cccccc; 
-      border-radius: 3px; 
-      font-size: 13px; 
+      padding: 10px 12px; 
+      background: rgba(255, 255, 255, 0.08); 
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15); 
+      color: #fff; 
+      border-radius: 10px; 
+      font-size: 14px; 
+      transition: all 0.2s ease;
     }
-    .form-group input:focus, .form-group select:focus { 
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { 
       outline: none; 
-      border-color: #007acc; 
+      border-color: rgba(59, 130, 246, 0.5); 
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+    }
+    .form-group small {
+      color: #9ca3af;
+      font-size: 12px;
+      margin-top: 4px;
+      display: block;
     }
     
     .close { 
-      background: none; 
+      background: rgba(255, 255, 255, 0.1); 
       border: none; 
-      color: #858585; 
-      font-size: 18px; 
+      color: #9ca3af; 
+      font-size: 20px; 
       cursor: pointer; 
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
     }
-    .close:hover { color: #cccccc; }
+    .close:hover { 
+      background: rgba(255, 255, 255, 0.2); 
+      color: #fff; 
+    }
     
     /* Alert */
     .alert { 
@@ -554,14 +613,95 @@
       opacity: 0.5; 
     }
     
+    /* Modal buttons */
+    .modal-footer .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-footer .btn:hover {
+      transform: translateY(-1px);
+    }
+    .modal-footer .btn:active {
+      transform: translateY(0);
+    }
+    .modal-footer .btn.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #e5e7eb;
+    }
+    .modal-footer .btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    .modal-footer .btn.success {
+      background: rgba(16, 185, 129, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #fff;
+    }
+    .modal-footer .btn.success:hover {
+      background: rgba(5, 150, 105, 0.95);
+      border-color: rgba(5, 150, 105, 0.4);
+    }
+    
     /* Light theme overrides for new elements */
-    body.light-theme .modal-content { background: #ffffff; border-color: #e5e7eb; }
-    body.light-theme .modal-header h3 { color: #374151; }
+    body.light-theme .modal { 
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    body.light-theme .modal-content { 
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(30px) saturate(200%);
+      -webkit-backdrop-filter: blur(30px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    }
+    body.light-theme .modal-header { 
+      border-bottom-color: #e5e7eb; 
+    }
+    body.light-theme .modal-header h3 { color: #111827; }
+    body.light-theme .modal-footer {
+      border-top-color: rgba(0, 0, 0, 0.05);
+    }
     body.light-theme .form-group label { color: #374151; }
-    body.light-theme .form-group input, body.light-theme .form-group select { 
-      background: #ffffff; 
-      border-color: #e5e7eb; 
+    body.light-theme .form-group input, body.light-theme .form-group select, body.light-theme .form-group textarea { 
+      background: rgba(255, 255, 255, 0.6); 
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 0, 0, 0.1); 
       color: #111827; 
+    }
+    body.light-theme .form-group input:focus, body.light-theme .form-group select:focus, body.light-theme .form-group textarea:focus {
+      border-color: rgba(59, 130, 246, 0.4);
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+    }
+    body.light-theme .form-group small {
+      color: #6b7280;
+    }
+    body.light-theme .close {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+    body.light-theme .close:hover {
+      background: #e5e7eb;
+      color: #374151;
+    }
+    body.light-theme .modal-footer .btn.secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    body.light-theme .modal-footer .btn.secondary:hover {
+      background: #e5e7eb;
     }
     body.light-theme .users-table th { background: #f9fafb; color: #374151; border-bottom-color: #e5e7eb; }
     body.light-theme .users-table td { border-bottom-color: #e5e7eb; }
@@ -740,7 +880,7 @@
       <i class="fas fa-user"></i>
       <span>Administrador</span>
     </div>
-    <a href="/biblioteca/public/index.php/drive" class="btn success">
+    <a href="/biblioteca/public/index.php/drive" class="btn primary">
       <i class="fas fa-arrow-left"></i>
       <span>Volver al Drive</span>
     </a>
@@ -950,7 +1090,7 @@
         </div>
         
         <div class="modal-footer">
-          <button type="button" class="btn" onclick="closeModal()">Cancelar</button>
+          <button type="button" class="btn secondary" onclick="closeModal()">Cancelar</button>
           <button type="submit" class="btn success" id="submitBtn">Crear Usuario</button>
         </div>
       </form>
@@ -994,7 +1134,7 @@
         </div>
         
         <div class="modal-footer">
-          <button type="button" class="btn" onclick="closeGroupModal()">Cancelar</button>
+          <button type="button" class="btn secondary" onclick="closeGroupModal()">Cancelar</button>
           <button type="submit" class="btn success" id="groupSubmitBtn">Crear Grupo</button>
         </div>
       </form>
@@ -1027,7 +1167,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn" onclick="closeMembersModal()">Cerrar</button>
+        <button type="button" class="btn secondary" onclick="closeMembersModal()">Cerrar</button>
       </div>
     </div>
   </div>
@@ -1156,7 +1296,7 @@
       document.getElementById('statusGroup').style.display = 'none';
       document.getElementById('passwordRequired').style.display = 'inline';
       document.getElementById('password').required = true;
-      document.getElementById('userModal').style.display = 'block';
+      document.getElementById('userModal').style.display = 'flex';
     }
 
     function editUser(userId) {
@@ -1185,7 +1325,7 @@
       document.getElementById('passwordRequired').style.display = 'none';
       document.getElementById('password').required = false;
       
-      document.getElementById('userModal').style.display = 'block';
+      document.getElementById('userModal').style.display = 'flex';
     }
 
     function closeModal() {

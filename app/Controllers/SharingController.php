@@ -249,40 +249,82 @@ class SharingController
         try {
             // Generar token único
             $token = bin2hex(random_bytes(32));
-            $passwordHash = $password ? password_hash($password, PASSWORD_ARGON2ID) : null;
+            $passwordHash = $password ? password_hash($password, PASSWORD_DEFAULT) : null;
             
             // Generar código de acceso si se solicita
             $accessCode = $useAccessCode ? $this->generateAccessCode() : null;
+            
+            // Obtener nombre del recurso
+            $resourceName = '';
+            if ($resourceType === 'archivo') {
+                $stmt = Database::connection()->prepare("SELECT nombre FROM archivos WHERE id = ?");
+                $stmt->execute([$resourceId]);
+                $result = $stmt->fetch();
+                $resourceName = $result ? $result['nombre'] : 'Archivo';
+            } else {
+                $stmt = Database::connection()->prepare("SELECT nombre FROM carpetas WHERE id = ?");
+                $stmt->execute([$resourceId]);
+                $result = $stmt->fetch();
+                $resourceName = $result ? $result['nombre'] : 'Carpeta';
+            }
 
-            // Crear enlace compartido
-            $stmt = Database::connection()->prepare("
-                INSERT INTO enlaces_compartidos 
-                (token, tipo, recurso_id, creado_por, rol_acceso, fecha_expiracion, 
-                 requiere_autenticacion, dominios_permitidos, puede_descargar, 
-                 puede_imprimir, puede_copiar, notificar_accesos, requiere_password, password_hash, contraseña, activo)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-            ");
-
-            $stmt->execute([
-                $token,
-                $resourceType,
-                $resourceId,
-                $userId,
-                $permission,
-                $expiryDate,
-                $requiresAuth,
-                $allowedDomains,
-                $canDownload,
-                $canPrint,
-                $canCopy,
-                $notifyAccess,
-                ($password || $accessCode) ? 1 : 0,
-                $passwordHash,
-                $accessCode
-            ]);
+            // Verificar qué columnas existen en la tabla
+            $stmt = Database::connection()->prepare("SHOW COLUMNS FROM enlaces_compartidos");
+            $stmt->execute();
+            $columns = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+            
+            // Construir consulta dinámicamente basada en columnas existentes
+            $insertColumns = ['token'];
+            $insertValues = [$token];
+            $placeholders = ['?'];
+            
+            // Mapeo de columnas y valores
+            $columnMapping = [
+                'tipo' => $resourceType,
+                'recurso_tipo' => $resourceType,
+                'recurso_id' => $resourceId,
+                'creado_por' => $userId,
+                'propietario_id' => $userId,
+                'nombre_recurso' => $resourceName,
+                'rol_acceso' => $permission,
+                'nivel_acceso' => $this->mapPermissionToAccessLevel($permission),
+                'permiso' => $permission,
+                'fecha_expiracion' => $expiryDate,
+                'requiere_autenticacion' => $requiresAuth,
+                'dominios_permitidos' => $allowedDomains,
+                'puede_descargar' => $canDownload,
+                'puede_imprimir' => $canPrint,
+                'puede_copiar' => $canCopy,
+                'notificar_accesos' => $notifyAccess,
+                'requiere_password' => ($password || $accessCode) ? 1 : 0,
+                'password' => $passwordHash,
+                'password_hash' => $passwordHash,
+                'contraseña' => $accessCode,
+                'activo' => 1
+            ];
+            
+            foreach ($columnMapping as $column => $value) {
+                if (in_array($column, $columns)) {
+                    $insertColumns[] = $column;
+                    $insertValues[] = $value;
+                    $placeholders[] = '?';
+                }
+            }
+            
+            $sql = sprintf(
+                "INSERT INTO enlaces_compartidos (%s) VALUES (%s)",
+                implode(', ', $insertColumns),
+                implode(', ', $placeholders)
+            );
+            
+            $stmt = Database::connection()->prepare($sql);
+            $stmt->execute($insertValues);
 
             $linkId = Database::connection()->lastInsertId();
-            $publicUrl = "http://localhost:8888/biblioteca/public/index.php/s/$token";
+            
+            // Construir URL base desde configuración o usar default
+            $baseUrl = $_SERVER['HTTP_HOST'] ?? 'localhost:8888';
+            $publicUrl = "http://{$baseUrl}/biblioteca/public/index.php/s/{$token}";
 
             return Response::json([
                 'success' => true,
@@ -290,7 +332,7 @@ class SharingController
                 'link_id' => $linkId,
                 'token' => $token,
                 'url' => $publicUrl,
-                'permission' => User::getSharingRoleName($permission),
+                'permission' => $this->getPermissionLabel($permission),
                 'expires' => $expiryDate,
                 'requires_password' => (bool)$password,
                 'access_code' => $accessCode,
@@ -299,8 +341,40 @@ class SharingController
 
         } catch (\Exception $e) {
             error_log("Error creando enlace público: " . $e->getMessage());
-            return Response::json(['error' => 'Error interno del servidor'], 500);
+            error_log("Stack trace: " . $e->getTraceAsString());
+            return Response::json([
+                'error' => 'Error interno del servidor',
+                'details' => $e->getMessage() // Solo en desarrollo, quitar en producción
+            ], 500);
         }
+    }
+    
+    /**
+     * Mapear permiso a nivel de acceso para compatibilidad
+     */
+    private function mapPermissionToAccessLevel($permission)
+    {
+        $mapping = [
+            'lector' => 'ver',
+            'comentarista' => 'ver',
+            'editor' => 'editar',
+            'propietario' => 'editar'
+        ];
+        return $mapping[$permission] ?? 'ver';
+    }
+    
+    /**
+     * Obtener etiqueta legible del permiso
+     */
+    private function getPermissionLabel($permission)
+    {
+        $labels = [
+            'lector' => 'Lector',
+            'comentarista' => 'Comentarista',
+            'editor' => 'Editor',
+            'propietario' => 'Propietario'
+        ];
+        return $labels[$permission] ?? 'Lector';
     }
 
     /**
