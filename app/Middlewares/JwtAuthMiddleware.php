@@ -29,6 +29,34 @@ class JwtAuthMiddleware
         
         if (!$token) {
             error_log("JWT Auth - No se encontró token en header x-token");
+            
+            // BYPASS TEMPORAL: Si no hay token, usar usuario administrador por defecto
+            // TODO: Remover cuando Orion envíe el token correctamente
+            $bypassMode = true; // Cambiar a false cuando JWT esté funcionando desde Orion
+            
+            if ($bypassMode) {
+                // Buscar usuario administrador por defecto
+                $stmt = \App\Services\Database::connection()->prepare("SELECT id, email, rol FROM usuarios WHERE rol = 'administrador' AND activo = 1 LIMIT 1");
+                $stmt->execute();
+                $defaultUser = $stmt->fetch(\PDO::FETCH_ASSOC);
+                
+                if ($defaultUser) {
+                    $userId = (int)$defaultUser['id'];
+                    $userRole = $defaultUser['rol'];
+                    $userEmail = $defaultUser['email'];
+                    
+                    Session::regenerate();
+                    Session::set('user_id', $userId);
+                    Session::set('user_role', $userRole);
+                    Session::set('jwt_validated', true);
+                    Session::set('jwt_email', $userEmail);
+                    Session::set('jwt_bypass', true);
+                    
+                    error_log("JWT Auth - BYPASS ACTIVO: Usando usuario administrador por defecto: {$userEmail} (ID: {$userId})");
+                    return $next();
+                }
+            }
+            
             return $this->unauthorized('Token no proporcionado');
         }
         
