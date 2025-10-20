@@ -18,6 +18,19 @@ return [
         // Permitir auto-creación de usuarios desde JWT
         'auto_create_users' => true,
     ],
+    'database' => [
+        'host' => getenv('DB_HOST') ?: 'localhost',
+        'port' => (int)(getenv('DB_PORT') ?: 3306),
+        'database' => getenv('DB_DATABASE') ?: 'biblioteca_digital',
+        'username' => getenv('DB_USERNAME') ?: 'root',
+        'password' => getenv('DB_PASSWORD') ?: '',
+        'charset' => 'utf8mb4',
+        'options' => [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ],
+    ],
     'session' => [
         'name' => 'BIBLIO_SESSID',
         'cookie_secure' => false,

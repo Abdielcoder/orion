@@ -14,7 +14,9 @@ class Database
             return self::$connection;
         }
 
-        $db = require dirname(__DIR__, 2) . '/config/database.php';
+        $config = require dirname(__DIR__, 2) . '/config/config.php';
+        $db = $config['database'];
+        
         $dsn = sprintf(
             'mysql:host=%s;port=%d;dbname=%s;charset=%s',
             $db['host'],
