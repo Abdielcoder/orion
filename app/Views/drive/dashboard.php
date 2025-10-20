@@ -8,39 +8,88 @@
   <!-- JWT Token Setup - DEBE ejecutarse PRIMERO antes de cualquier petición -->
   <script>
     (function() {
-      try {
-        // Obtener el token de localStorage
-        const token = localStorage.getItem('token');
+      let tokenReceived = false;
+      
+      // Función para procesar y recargar con el token
+      function processToken(token) {
+        if (!token || tokenReceived) return;
         
-        if (token) {
-          // Verificar si ya tenemos el token en la URL o en la cookie
-          const urlParams = new URLSearchParams(window.location.search);
-          const tokenInUrl = urlParams.get('jwt_token');
+        tokenReceived = true;
+        console.log('✅ Token JWT recibido:', token.substring(0, 50) + '...');
+        
+        // Guardar en localStorage para persistencia
+        localStorage.setItem('token', token);
+        
+        // Verificar si ya tenemos el token en la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenInUrl = urlParams.get('jwt_token');
+        
+        if (!tokenInUrl) {
+          console.log('🔄 Recargando página con token JWT en URL...');
           
-          // Verificar si tenemos la cookie
-          const hasCookie = document.cookie.split(';').some(c => c.trim().startsWith('orion_jwt_token='));
-          
-          // Si no tenemos el token en la URL ni en la cookie, recargar con el token
-          if (!tokenInUrl && !hasCookie) {
-            console.log('🔄 Recargando página con token JWT en URL...');
-            
-            // Agregar token a la URL y recargar
-            const newUrl = new URL(window.location.href);
-            newUrl.searchParams.set('jwt_token', token);
-            window.location.href = newUrl.toString();
-            return; // Detener ejecución
-          }
-          
-          // Si llegamos aquí, ya tenemos el token, guardarlo en cookie
-          const expires = new Date(Date.now() + 4 * 60 * 60 * 1000).toUTCString();
-          document.cookie = `orion_jwt_token=${token}; expires=${expires}; path=/; SameSite=Lax`;
-          console.log('🔐 Token Orion copiado a cookie para autenticación del servidor');
-        } else {
-          console.log('⚠️ No se encontró token en localStorage');
+          // Agregar token a la URL y recargar
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.set('jwt_token', token);
+          window.location.href = newUrl.toString();
+          return;
+        }
+        
+        // Si ya está en la URL, guardar en cookie
+        const expires = new Date(Date.now() + 4 * 60 * 60 * 1000).toUTCString();
+        document.cookie = `orion_jwt_token=${token}; expires=${expires}; path=/; SameSite=Lax`;
+        console.log('🔐 Token guardado en cookie para el servidor');
+      }
+      
+      // 1. ESCUCHAR MENSAJES DE ORION (Principal)
+      window.addEventListener('message', function(event) {
+        // Verificar origen (comentar en desarrollo, descomentar en producción)
+        // if (event.origin !== 'https://www.portalrinorisk.com') return;
+        
+        if (event.data && event.data.type === 'ORION_TOKEN' && event.data.token) {
+          console.log('📨 Token recibido desde Orion via postMessage');
+          processToken(event.data.token);
+        }
+      });
+      
+      // 2. Solicitar token al parent (Orion) si estamos en iframe
+      if (window !== window.parent) {
+        try {
+          console.log('📤 Solicitando token a Orion...');
+          window.parent.postMessage({ type: 'REQUEST_TOKEN' }, '*');
+        } catch (e) {
+          console.warn('⚠️ No se pudo solicitar token al parent:', e);
+        }
+      }
+      
+      // 3. Intentar obtener token de localStorage (fallback)
+      try {
+        const localToken = localStorage.getItem('token');
+        if (localToken) {
+          console.log('🔑 Token encontrado en localStorage');
+          processToken(localToken);
         }
       } catch (e) {
-        console.error('❌ Error en setup de token:', e);
+        console.warn('⚠️ No se pudo acceder a localStorage:', e);
       }
+      
+      // 4. Si ya tenemos el token en la URL, guardarlo
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get('jwt_token');
+      if (urlToken) {
+        console.log('🔗 Token encontrado en URL');
+        localStorage.setItem('token', urlToken);
+        const expires = new Date(Date.now() + 4 * 60 * 60 * 1000).toUTCString();
+        document.cookie = `orion_jwt_token=${urlToken}; expires=${expires}; path=/; SameSite=Lax`;
+        console.log('🔐 Token guardado desde URL');
+      }
+      
+      // 5. Timeout: Si después de 2 segundos no hay token, mostrar advertencia
+      setTimeout(function() {
+        if (!tokenReceived && !urlToken && !localStorage.getItem('token')) {
+          console.warn('⚠️ No se recibió token de Orion. Usando bypass con administrador por defecto.');
+          console.info('💡 SOLUCIÓN: Orion debe enviar el token con: window.postMessage({type: "ORION_TOKEN", token: "..."}, "*")');
+        }
+      }, 2000);
     })();
   </script>
   

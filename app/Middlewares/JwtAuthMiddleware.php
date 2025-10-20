@@ -219,6 +219,13 @@ class JwtAuthMiddleware
      */
     private function getTokenFromHeader(): ?string
     {
+        // DEBUG: Listar todos los headers recibidos
+        error_log("JWT Auth - DEBUG: Verificando headers...");
+        if (function_exists('getallheaders')) {
+            $allHeaders = getallheaders();
+            error_log("JWT Auth - DEBUG: Headers disponibles: " . json_encode(array_keys($allHeaders)));
+        }
+        
         // 1. Intentar obtener desde localStorage/cookie del navegador
         // (El token enviado por JavaScript desde el cliente)
         if (isset($_COOKIE['orion_jwt_token']) && !empty($_COOKIE['orion_jwt_token'])) {
@@ -226,10 +233,11 @@ class JwtAuthMiddleware
             return trim($_COOKIE['orion_jwt_token']);
         }
         
-        // 2. Intentar varios formatos de header
+        // 2. Intentar varios formatos de header en $_SERVER
         $headers = [
             'HTTP_X_TOKEN',
             'HTTP_X-TOKEN',
+            'HTTP_X_Token',
             'X-Token',
             'X-TOKEN',
             'x-token'
@@ -237,18 +245,18 @@ class JwtAuthMiddleware
         
         foreach ($headers as $header) {
             if (isset($_SERVER[$header]) && !empty($_SERVER[$header])) {
-                error_log("JWT Auth - Token encontrado en header: {$header}");
+                error_log("JWT Auth - Token encontrado en \$_SERVER['{$header}']");
                 return trim($_SERVER[$header]);
             }
         }
         
-        // 3. Intentar obtener de getallheaders() si está disponible
+        // 3. Intentar obtener de getallheaders() - Buscar X-Token (case-insensitive)
         if (function_exists('getallheaders')) {
             $allHeaders = getallheaders();
             if ($allHeaders) {
                 foreach ($allHeaders as $name => $value) {
                     if (strtolower($name) === 'x-token' && !empty($value)) {
-                        error_log("JWT Auth - Token encontrado en getallheaders(): {$name}");
+                        error_log("JWT Auth - Token encontrado en getallheaders(): '{$name}' = " . substr($value, 0, 50) . "...");
                         return trim($value);
                     }
                 }
@@ -261,7 +269,7 @@ class JwtAuthMiddleware
             if ($allHeaders) {
                 foreach ($allHeaders as $name => $value) {
                     if (strtolower($name) === 'x-token' && !empty($value)) {
-                        error_log("JWT Auth - Token encontrado en apache_request_headers(): {$name}");
+                        error_log("JWT Auth - Token encontrado en apache_request_headers(): '{$name}' = " . substr($value, 0, 50) . "...");
                         return trim($value);
                     }
                 }
