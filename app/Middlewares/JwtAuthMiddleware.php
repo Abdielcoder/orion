@@ -30,12 +30,34 @@ class JwtAuthMiddleware
         if (!$token) {
             error_log("JWT Auth - No se encontró token en header x-token");
             
-            // BYPASS TEMPORAL: Si no hay token, usar usuario administrador por defecto
+            // BYPASS TEMPORAL: Intentar obtener usuario del contexto de Orion
             // TODO: Remover cuando Orion envíe el token correctamente
             $bypassMode = true; // Cambiar a false cuando JWT esté funcionando desde Orion
             
             if ($bypassMode) {
-                // Buscar usuario administrador por defecto
+                // Intentar obtener email del usuario desde parámetros GET o POST
+                $userEmail = $this->getUserEmailFromContext();
+                
+                if ($userEmail) {
+                    // Buscar usuario específico por email
+                    $user = $this->userRepository->findByEmail($userEmail);
+                    
+                    if ($user && $user->activo) {
+                        Session::regenerate();
+                        Session::set('user_id', $user->id);
+                        Session::set('user_role', $user->rol);
+                        Session::set('jwt_validated', true);
+                        Session::set('jwt_email', $user->email);
+                        Session::set('jwt_bypass', true);
+                        
+                        error_log("JWT Auth - BYPASS ACTIVO: Usando usuario específico: {$user->email} (ID: {$user->id}, Rol: {$user->rol})");
+                        return $next();
+                    } else {
+                        error_log("JWT Auth - BYPASS: Usuario no encontrado o inactivo: {$userEmail}");
+                    }
+                }
+                
+                // Fallback: usar usuario administrador por defecto
                 $stmt = \App\Services\Database::connection()->prepare("SELECT id, email, rol FROM usuarios WHERE rol = 'administrador' AND activo = 1 LIMIT 1");
                 $stmt->execute();
                 $defaultUser = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -108,6 +130,86 @@ class JwtAuthMiddleware
         error_log("JWT Auth - Usuario autenticado con lógica de biblioteca: {$user->email} (ID: {$user->id}, Rol: {$user->rol}, Activo: {$user->activo})");
         
         return $next();
+    }
+    
+    /**
+     * Intenta obtener el email del usuario desde el contexto de la petición
+     * (parámetros GET, POST, headers, etc.)
+     * 
+     * @return string|null
+     */
+    private function getUserEmailFromContext(): ?string
+    {
+        // 1. Buscar en parámetros GET
+        if (isset($_GET['user_email']) && !empty($_GET['user_email'])) {
+            $email = trim($_GET['user_email']);
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                error_log("JWT Auth - Email encontrado en GET: {$email}");
+                return $email;
+            }
+        }
+        
+        // 2. Buscar en parámetros POST
+        if (isset($_POST['user_email']) && !empty($_POST['user_email'])) {
+            $email = trim($_POST['user_email']);
+            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                error_log("JWT Auth - Email encontrado en POST: {$email}");
+                return $email;
+            }
+        }
+        
+        // 3. Buscar en headers personalizados
+        $headers = [
+            'HTTP_X_USER_EMAIL',
+            'HTTP_X-USER-EMAIL',
+            'X-User-Email',
+            'X-USER-EMAIL',
+            'x-user-email'
+        ];
+        
+        foreach ($headers as $header) {
+            if (isset($_SERVER[$header]) && !empty($_SERVER[$header])) {
+                $email = trim($_SERVER[$header]);
+                if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    error_log("JWT Auth - Email encontrado en header: {$header} = {$email}");
+                    return $email;
+                }
+            }
+        }
+        
+        // 4. Buscar en getallheaders()
+        if (function_exists('getallheaders')) {
+            $allHeaders = getallheaders();
+            if ($allHeaders) {
+                foreach ($allHeaders as $name => $value) {
+                    if (strtolower($name) === 'x-user-email' && !empty($value)) {
+                        $email = trim($value);
+                        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                            error_log("JWT Auth - Email encontrado en getallheaders(): {$name} = {$email}");
+                            return $email;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 5. Buscar en apache_request_headers()
+        if (function_exists('apache_request_headers')) {
+            $allHeaders = apache_request_headers();
+            if ($allHeaders) {
+                foreach ($allHeaders as $name => $value) {
+                    if (strtolower($name) === 'x-user-email' && !empty($value)) {
+                        $email = trim($value);
+                        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                            error_log("JWT Auth - Email encontrado en apache_request_headers(): {$name} = {$email}");
+                            return $email;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return null;
     }
     
     /**
