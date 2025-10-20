@@ -11,6 +11,7 @@ Se ha implementado un sistema de autenticación mediante JWT que recibe tokens d
 3. **`config/keys/`** - Directorio para claves públicas
 4. **`SISTEMA_AUTENTICACION_JWT.md`** - Documentación completa del sistema
 5. **`test_jwt.php`** - Script de prueba
+6. **`public/test_users.html`** - Página de prueba para diferentes usuarios
 
 ## Archivos Modificados
 
@@ -38,14 +39,26 @@ chmod 600 /Applications/MAMP/htdocs/biblioteca/config/keys/orion.pem
 
 ### 3. Probar el Sistema
 
-#### Opción A: Desde línea de comandos
+#### Opción A: Página de Prueba de Usuarios (Recomendado)
+
+Abre en tu navegador:
+- **Local**: http://localhost:8888/biblioteca/public/test_users.html
+- **Servidor**: https://orion.rinorisk.com/biblioteca/public/test_users.html
+
+Esta página te permite probar el acceso con diferentes usuarios y roles:
+- **desarrollo@rinorisk.com** (Administrador - Usuario por defecto)
+- **gerente.mkt@rinorisk.com** (Usuario Editor)
+- **apexlabssolutions@gmail.com** (Usuario Editor)
+- **desarrollo-general@rinorisk.com** (Administrador)
+
+#### Opción B: Desde línea de comandos
 
 ```bash
 cd /Applications/MAMP/htdocs/biblioteca
 php test_jwt.php
 ```
 
-#### Opción B: Desde el navegador
+#### Opción C: Desde el navegador con test_jwt.php
 
 Abre: http://localhost:8888/biblioteca/test_jwt.php
 

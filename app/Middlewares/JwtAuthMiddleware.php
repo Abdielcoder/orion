@@ -213,13 +213,20 @@ class JwtAuthMiddleware
     }
     
     /**
-     * Obtiene el token JWT del header x-token
+     * Obtiene el token JWT del header x-token o de parámetros GET/POST
      * 
      * @return string|null
      */
     private function getTokenFromHeader(): ?string
     {
-        // Intentar varios formatos de header
+        // 1. Intentar obtener desde localStorage/cookie del navegador
+        // (El token enviado por JavaScript desde el cliente)
+        if (isset($_COOKIE['orion_jwt_token']) && !empty($_COOKIE['orion_jwt_token'])) {
+            error_log("JWT Auth - Token encontrado en cookie: orion_jwt_token");
+            return trim($_COOKIE['orion_jwt_token']);
+        }
+        
+        // 2. Intentar varios formatos de header
         $headers = [
             'HTTP_X_TOKEN',
             'HTTP_X-TOKEN',
@@ -235,7 +242,7 @@ class JwtAuthMiddleware
             }
         }
         
-        // Intentar obtener de getallheaders() si está disponible
+        // 3. Intentar obtener de getallheaders() si está disponible
         if (function_exists('getallheaders')) {
             $allHeaders = getallheaders();
             if ($allHeaders) {
@@ -248,7 +255,7 @@ class JwtAuthMiddleware
             }
         }
         
-        // Fallback: buscar en apache_request_headers() si está disponible
+        // 4. Fallback: buscar en apache_request_headers() si está disponible
         if (function_exists('apache_request_headers')) {
             $allHeaders = apache_request_headers();
             if ($allHeaders) {
@@ -259,6 +266,18 @@ class JwtAuthMiddleware
                     }
                 }
             }
+        }
+        
+        // 5. Intentar obtener desde parámetros GET
+        if (isset($_GET['jwt_token']) && !empty($_GET['jwt_token'])) {
+            error_log("JWT Auth - Token encontrado en parámetro GET: jwt_token");
+            return trim($_GET['jwt_token']);
+        }
+        
+        // 6. Intentar obtener desde parámetros POST
+        if (isset($_POST['jwt_token']) && !empty($_POST['jwt_token'])) {
+            error_log("JWT Auth - Token encontrado en parámetro POST: jwt_token");
+            return trim($_POST['jwt_token']);
         }
         
         return null;

@@ -4,6 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Explorador de Archivos - Drive</title>
+  
+  <!-- JWT Token Setup - DEBE ejecutarse PRIMERO antes de cualquier petición -->
+  <script>
+    (function() {
+      try {
+        // Intentar obtener el token de localStorage y guardarlo en cookie
+        const token = localStorage.getItem('token');
+        if (token) {
+          const expires = new Date(Date.now() + 4 * 60 * 60 * 1000).toUTCString();
+          document.cookie = `orion_jwt_token=${token}; expires=${expires}; path=/; SameSite=Lax`;
+          console.log('🔐 Token Orion copiado a cookie para autenticación del servidor');
+        }
+      } catch (e) {
+        console.warn('⚠️ No se pudo copiar token a cookie:', e);
+      }
+    })();
+  </script>
+  
   <!-- Font Awesome Icons - Local -->
   <link rel="stylesheet" href="/biblioteca/public/assets/css/fontawesome.min.css">
   <link rel="stylesheet" href="/biblioteca/public/assets/css/theme.css">
@@ -2543,6 +2561,140 @@
   </script>
 
   <script>
+    // =========================================================================
+    // JWT TOKEN INTERCEPTOR - Captura el token de Orion y lo envía en headers
+    // =========================================================================
+    (function() {
+      // Función para guardar token en cookie
+      function saveTokenToCookie(token) {
+        if (!token) return;
+        
+        try {
+          // Guardar en cookie con expiración de 4 horas (tiempo típico de JWT)
+          const expires = new Date(Date.now() + 4 * 60 * 60 * 1000).toUTCString();
+          document.cookie = `orion_jwt_token=${token}; expires=${expires}; path=/; SameSite=Lax`;
+          console.log('💾 Token guardado en cookie: orion_jwt_token');
+        } catch (error) {
+          console.error('❌ Error guardando token en cookie:', error);
+        }
+      }
+      
+      // Función para obtener el token JWT de Orion
+      function getOrionToken() {
+        try {
+          let token = null;
+          
+          // 1. Desde cookie (prioridad más alta)
+          const cookies = document.cookie.split(';');
+          for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'orion_jwt_token' && value) {
+              console.log('🔑 Token JWT encontrado en cookie');
+              return value;
+            }
+          }
+          
+          // 2. Desde localStorage
+          token = localStorage.getItem('token');
+          if (token) {
+            console.log('🔑 Token JWT encontrado en localStorage');
+            saveTokenToCookie(token);
+            return token;
+          }
+          
+          // 3. Desde sessionStorage
+          token = sessionStorage.getItem('token');
+          if (token) {
+            console.log('🔑 Token JWT encontrado en sessionStorage');
+            saveTokenToCookie(token);
+            return token;
+          }
+          
+          // 4. Desde window (variable global de Orion)
+          if (window.orionToken) {
+            console.log('🔑 Token JWT encontrado en window.orionToken');
+            saveTokenToCookie(window.orionToken);
+            return window.orionToken;
+          }
+          
+          // 5. Desde parent window (si está en iframe)
+          if (window !== window.parent) {
+            try {
+              token = window.parent.localStorage?.getItem('token');
+              if (token) {
+                console.log('🔑 Token JWT encontrado en parent localStorage');
+                localStorage.setItem('token', token); // Copiar al localStorage local
+                saveTokenToCookie(token);
+                return token;
+              }
+            } catch (e) {
+              console.log('⚠️ No se puede acceder al parent window (CORS)');
+            }
+          }
+          
+          console.log('⚠️ No se encontró token JWT en ninguna fuente');
+          return null;
+        } catch (error) {
+          console.error('❌ Error obteniendo token JWT:', error);
+          return null;
+        }
+      }
+      
+      // Interceptar todas las peticiones fetch para agregar el token
+      const originalFetch = window.fetch;
+      window.fetch = function(...args) {
+        const [url, options = {}] = args;
+        const token = getOrionToken();
+        
+        if (token) {
+          // Agregar header x-token
+          options.headers = {
+            ...options.headers,
+            'x-token': token
+          };
+          console.log('📤 Enviando token JWT en header x-token para:', url);
+        }
+        
+        return originalFetch(url, options);
+      };
+      
+      // Interceptar XMLHttpRequest para agregar el token
+      const originalOpen = XMLHttpRequest.prototype.open;
+      const originalSend = XMLHttpRequest.prototype.send;
+      
+      XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+        this._url = url;
+        return originalOpen.call(this, method, url, ...rest);
+      };
+      
+      XMLHttpRequest.prototype.send = function(...args) {
+        const token = getOrionToken();
+        if (token) {
+          this.setRequestHeader('x-token', token);
+          console.log('📤 Enviando token JWT en header x-token (XHR) para:', this._url);
+        }
+        return originalSend.apply(this, args);
+      };
+      
+      // Forzar recarga con token cuando se detecte login de Orion
+      window.addEventListener('message', function(event) {
+        // Escuchar mensajes del parent (Orion) que indiquen login exitoso
+        if (event.data && event.data.type === 'orion-login' && event.data.token) {
+          console.log('✅ Login de Orion detectado, guardando token');
+          localStorage.setItem('token', event.data.token);
+          
+          // Recargar la página para que el middleware capture el token
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        }
+      });
+      
+      console.log('🚀 JWT Token Interceptor inicializado');
+    })();
+  </script>
+
+  <script>
     // Test Font Awesome loading
     document.addEventListener('DOMContentLoaded', function() {
       const testIcon = document.createElement('i');
@@ -2606,9 +2758,6 @@
       
       // Load storage quota information
       loadStorageQuota();
-      
-      // Renovar CSRF token automáticamente cada 30 minutos
-      setInterval(refreshCsrfToken, 30 * 60 * 1000); // 30 minutos
     });
 
     function setupEventListeners() {
