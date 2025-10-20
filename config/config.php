@@ -15,8 +15,8 @@ return [
         'public_key' => __DIR__ . '/../config/keys/orion.pem',
         // Verificar firma JWT (true = verificar, false = solo decodificar)
         'verify_signature' => false,
-        // Permitir auto-creación de usuarios desde JWT
-        'auto_create_users' => true,
+        // Solo permitir usuarios existentes en biblioteca digital
+        'auto_create_users' => false,
     ],
     'database' => [
         'host' => getenv('DB_HOST') ?: 'localhost',
