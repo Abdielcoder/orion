@@ -483,14 +483,14 @@
                     Acceso Requerido
                 </div>
                 <div class="status-info">
-                    Debe iniciar sesión para acceder al sistema de gestión documental.
+                    Acceso automático mediante autenticación JWT desde el sistema Orion.
                 </div>
             </div>
 
             <div class="action-buttons">
-                <a href="<?= htmlspecialchars($baseUrl ?? '', ENT_QUOTES, 'UTF-8') ?>/auth/login" class="action-btn btn-primary">
+                <a href="<?= htmlspecialchars($baseUrl ?? '', ENT_QUOTES, 'UTF-8') ?>/drive" class="action-btn btn-primary">
                     <i class="fas fa-sign-in-alt"></i>
-                    Iniciar Sesión
+                    Acceder al Drive
                 </a>
                 <a href="<?= htmlspecialchars($baseUrl ?? '', ENT_QUOTES, 'UTF-8') ?>/health" class="action-btn btn-secondary">
                     <i class="fas fa-heartbeat"></i>

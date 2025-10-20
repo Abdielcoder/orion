@@ -16,50 +16,7 @@ class AuthController
         $this->users = new UserRepository();
     }
 
-    public function showLogin()
-    {
-        $csrf = $_SESSION['csrf_token'] ?? '';
-        $baseUrl = $this->getBaseUrl();
-        Response::view('auth/login', ['csrf' => $csrf, 'baseUrl' => $baseUrl]);
-    }
-
-    private function getBaseUrl()
-    {
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $path = dirname($_SERVER['SCRIPT_NAME']);
-        return $protocol . $host . $path . '/index.php';
-    }
-
-    public function login()
-    {
-        $email = trim($_POST['email'] ?? '');
-        $password = (string)($_POST['password'] ?? '');
-        if ($email === '' || $password === '') {
-            return Response::json(['error' => 'Credenciales requeridas'], 422);
-        }
-        $usePlain = (bool) Config::get('auth.plaintext_passwords', false);
-        if ($usePlain) {
-            $user = $this->users->findByEmailAndPasswordPlain($email, $password);
-        } else {
-            $user = $this->users->findByEmail($email);
-            if ($user && $user->password) {
-                if (!password_verify($password, $user->password)) {
-                    $user = null;
-                }
-            } else {
-                $user = null;
-            }
-        }
-
-        if (!$user) {
-            return Response::json(['error' => 'Email o contraseña inválidos'], 401);
-        }
-        Session::regenerate();
-        Session::set('user_id', $user->id);
-        Session::set('user_role', $user->rol);
-        return Response::json(['ok' => true]);
-    }
+    // Métodos de login eliminados - Solo JWT ahora
 
     public function logout()
     {

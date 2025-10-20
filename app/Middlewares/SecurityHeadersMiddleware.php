@@ -9,7 +9,7 @@ class SecurityHeadersMiddleware
     public function handle(callable $next)
     {
         header('X-Content-Type-Options: nosniff');
-        header('X-Frame-Options: SAMEORIGIN');
+        // header('X-Frame-Options: SAMEORIGIN'); // Comentado para permitir iframes
         header('Referrer-Policy: no-referrer-when-downgrade');
         
         // CORS headers for AJAX requests with credentials

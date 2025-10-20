@@ -17,16 +17,90 @@ class ShareLinkRepository
     public function create(string $tipo, int $recursoId, int $creadoPor, array $permisos, ?string $fechaExpiracion, int $limiteDescargas = 0): string
     {
         $token = bin2hex(random_bytes(32));
-        $stmt = $this->db->prepare('INSERT INTO enlaces_compartidos (token, tipo, recurso_id, creado_por, permisos, fecha_expiracion, limite_descargas, contador_accesos, activo) VALUES (:token,:tipo,:rid,:uid,:permisos,:exp,:lim,0,1)');
+        
+        // Obtener el nombre del recurso
+        $nombreRecurso = '';
+        if ($tipo === 'archivo') {
+            $stmt = $this->db->prepare('SELECT nombre FROM archivos WHERE id = :id LIMIT 1');
+            $stmt->execute(['id' => $recursoId]);
+            $row = $stmt->fetch();
+            $nombreRecurso = $row ? $row['nombre'] : 'Archivo sin nombre';
+        } else {
+            $stmt = $this->db->prepare('SELECT nombre FROM carpetas WHERE id = :id LIMIT 1');
+            $stmt->execute(['id' => $recursoId]);
+            $row = $stmt->fetch();
+            $nombreRecurso = $row ? $row['nombre'] : 'Carpeta sin nombre';
+        }
+        
+        // Determinar el nivel de acceso basado en los permisos
+        $nivelAcceso = 'ver';
+        if (isset($permisos['write']) && $permisos['write']) {
+            $nivelAcceso = 'editar';
+        } elseif (isset($permisos['download']) && $permisos['download']) {
+            $nivelAcceso = 'descargar';
+        }
+        
+        // Determinar el rol de acceso
+        $rolAcceso = 'lector';
+        if (isset($permisos['write']) && $permisos['write']) {
+            $rolAcceso = 'editor';
+        }
+        
+        $stmt = $this->db->prepare('
+            INSERT INTO enlaces_compartidos (
+                token, 
+                tipo, 
+                recurso_tipo, 
+                recurso_id, 
+                creado_por, 
+                propietario_id, 
+                nombre_recurso, 
+                nivel_acceso, 
+                fecha_expiracion, 
+                limite_accesos, 
+                accesos_actuales, 
+                activo,
+                rol_acceso,
+                puede_descargar,
+                puede_imprimir,
+                puede_copiar
+            ) VALUES (
+                :token,
+                :tipo,
+                :recurso_tipo,
+                :rid,
+                :uid,
+                :propietario,
+                :nombre,
+                :nivel,
+                :exp,
+                :lim,
+                0,
+                1,
+                :rol,
+                :puede_descargar,
+                :puede_imprimir,
+                :puede_copiar
+            )
+        ');
+        
         $stmt->execute([
             'token' => $token,
             'tipo' => $tipo,
+            'recurso_tipo' => $tipo,
             'rid' => $recursoId,
             'uid' => $creadoPor,
-            'permisos' => json_encode($permisos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'propietario' => $creadoPor,
+            'nombre' => $nombreRecurso,
+            'nivel' => $nivelAcceso,
             'exp' => $fechaExpiracion,
             'lim' => $limiteDescargas,
+            'rol' => $rolAcceso,
+            'puede_descargar' => isset($permisos['download']) ? ($permisos['download'] ? 1 : 0) : 1,
+            'puede_imprimir' => isset($permisos['print']) ? ($permisos['print'] ? 1 : 0) : 1,
+            'puede_copiar' => isset($permisos['copy']) ? ($permisos['copy'] ? 1 : 0) : 1,
         ]);
+        
         return $token;
     }
 
@@ -40,7 +114,7 @@ class ShareLinkRepository
 
     public function incrementAccess(string $token): void
     {
-        $this->db->prepare('UPDATE enlaces_compartidos SET contador_accesos = contador_accesos + 1 WHERE token = :t')->execute(['t' => $token]);
+        $this->db->prepare('UPDATE enlaces_compartidos SET accesos_actuales = accesos_actuales + 1 WHERE token = :t')->execute(['t' => $token]);
     }
 }
 

@@ -180,11 +180,11 @@ header('Content-Security-Policy: ...');
 
 ## Sistema de Login Tradicional
 
-El sistema de login tradicional (`/auth/login`) se mantiene como **fallback** pero ya no es el sistema principal. Las rutas de autenticación tradicional siguen disponibles:
+**ELIMINADO COMPLETAMENTE** - El sistema de login tradicional ha sido removido. Solo se mantiene:
 
-- `GET /auth/login` - Muestra formulario de login
-- `POST /auth/login` - Procesa login tradicional
-- `POST /auth/logout` - Cierra sesión
+- `POST /auth/logout` - Cierra sesión (requiere JWT válido)
+
+Todas las demás rutas de autenticación tradicional han sido eliminadas para usar únicamente JWT.
 
 ## Migración de Rutas
 

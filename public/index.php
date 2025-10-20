@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 $router = new Router();
 
-// Rutas mínimas - Redirección directa al drive (autenticación JWT automática)
+// Ruta raíz - Redirección directa al drive (autenticación JWT automática)
 $router->add('GET', '/', function () use ($config) {
     header('Location: /biblioteca/public/index.php/drive');
     exit;
@@ -98,9 +98,7 @@ $router->add('GET', '/health', function () {
     App\Helpers\Response::json(['status' => 'ok', 'time' => time()]);
 }, [RateLimitMiddleware::class, SecurityHeadersMiddleware::class]);
 
-// Auth (Mantenido como fallback, pero JWT es el sistema principal)
-$router->add('GET', '/auth/login', [AuthController::class, 'showLogin'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class]);
-$router->add('POST', '/auth/login', [AuthController::class, 'login'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, RateLimitMiddleware::class]);
+// Auth - Solo logout (JWT es el sistema principal)
 $router->add('POST', '/auth/logout', [AuthController::class, 'logout'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 
 // Dev utilities (local only)

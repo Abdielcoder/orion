@@ -44,16 +44,24 @@ class AdminUsersController
      */
     public function getUsers()
     {
+        error_log("DEBUG getUsers - Starting getUsers method");
+        
         if (!$this->isAdmin()) {
+            error_log("DEBUG getUsers - Access denied - not admin");
             return Response::json(['error' => 'Acceso denegado'], 403);
         }
 
+        error_log("DEBUG getUsers - Getting all users from repository");
         $users = $this->userRepository->getAllUsers();
+        error_log("DEBUG getUsers - Got " . count($users) . " users from repository");
         
         // Recalcular uso real para cada usuario
+        error_log("DEBUG getUsers - Recalculating storage usage");
         $this->recalcularUsoAlmacenamiento($users);
+        error_log("DEBUG getUsers - Storage usage recalculated");
         
         // Formatear datos para la respuesta
+        error_log("DEBUG getUsers - Formatting user data");
         $formattedUsers = array_map(function($user) {
             return [
                 'id' => $user->id,
@@ -73,7 +81,8 @@ class AdminUsersController
                 'porcentaje_uso' => $user->getPorcentajeUso()
             ];
         }, $users);
-
+        
+        error_log("DEBUG getUsers - Formatted " . count($formattedUsers) . " users, returning response");
         return Response::json(['users' => $formattedUsers]);
     }
 

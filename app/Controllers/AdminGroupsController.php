@@ -84,13 +84,13 @@ class AdminGroupsController
             // Agregar miembros al grupo
             if (!empty($members) && is_array($members)) {
                 $stmt = Database::connection()->prepare("
-                    INSERT INTO grupo_miembros (grupo_id, usuario_id, fecha_agregado)
-                    VALUES (?, ?, NOW())
+                    INSERT INTO grupo_miembros (grupo_id, usuario_id, agregado_por, fecha_agregado)
+                    VALUES (?, ?, ?, NOW())
                 ");
                 
                 foreach ($members as $memberId) {
                     if (is_numeric($memberId)) {
-                        $stmt->execute([$groupId, (int)$memberId]);
+                        $stmt->execute([$groupId, (int)$memberId, $userId]);
                     }
                 }
             }
@@ -149,14 +149,15 @@ class AdminGroupsController
 
             // Agregar nuevos miembros
             if (!empty($members) && is_array($members)) {
+                $currentUserId = (int)Session::get('user_id');
                 $stmt = Database::connection()->prepare("
-                    INSERT INTO grupo_miembros (grupo_id, usuario_id, fecha_agregado)
-                    VALUES (?, ?, NOW())
+                    INSERT INTO grupo_miembros (grupo_id, usuario_id, agregado_por, fecha_agregado)
+                    VALUES (?, ?, ?, NOW())
                 ");
                 
                 foreach ($members as $memberId) {
                     if (is_numeric($memberId)) {
-                        $stmt->execute([$groupId, (int)$memberId]);
+                        $stmt->execute([$groupId, (int)$memberId, $currentUserId]);
                     }
                 }
             }
@@ -209,12 +210,18 @@ class AdminGroupsController
             ");
             $stmt->execute([$groupId]);
 
-            // Eliminar permisos asociados al grupo
-            $stmt = Database::connection()->prepare("
-                DELETE FROM permisos_recursos 
-                WHERE grupo_id = ?
-            ");
-            $stmt->execute([$groupId]);
+            // Eliminar permisos asociados al grupo (si existen)
+            // Nota: Verificar si existe la tabla compartidos_grupos
+            try {
+                $stmt = Database::connection()->prepare("
+                    DELETE FROM compartidos_grupos 
+                    WHERE grupo_id = ?
+                ");
+                $stmt->execute([$groupId]);
+            } catch (Exception $e) {
+                // La tabla puede no existir, continuar
+                error_log('Note: compartidos_grupos table may not exist: ' . $e->getMessage());
+            }
 
             Database::connection()->commit();
 
@@ -303,11 +310,12 @@ class AdminGroupsController
             }
 
             // Agregar miembro
+            $currentUserId = (int)Session::get('user_id');
             $stmt = Database::connection()->prepare("
-                INSERT INTO grupo_miembros (grupo_id, usuario_id, fecha_agregado)
-                VALUES (?, ?, NOW())
+                INSERT INTO grupo_miembros (grupo_id, usuario_id, agregado_por, fecha_agregado)
+                VALUES (?, ?, ?, NOW())
             ");
-            $stmt->execute([$groupId, $userId]);
+            $stmt->execute([$groupId, $userId, $currentUserId]);
 
             return Response::json([
                 'success' => true,
@@ -319,6 +327,35 @@ class AdminGroupsController
             return Response::json([
                 'success' => false,
                 'error' => 'Error al agregar miembro'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener usuarios disponibles para agregar a grupos
+     */
+    public function getAvailableUsers()
+    {
+        try {
+            $stmt = Database::connection()->prepare("
+                SELECT u.id, u.nombre, u.email, u.rol
+                FROM usuarios u
+                WHERE u.activo = 1
+                ORDER BY u.nombre
+            ");
+            $stmt->execute();
+            $users = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            return Response::json([
+                'success' => true,
+                'users' => $users
+            ]);
+
+        } catch (Exception $e) {
+            error_log('Error getting available users: ' . $e->getMessage());
+            return Response::json([
+                'success' => false,
+                'error' => 'Error al obtener usuarios disponibles'
             ], 500);
         }
     }

@@ -475,7 +475,7 @@
                 
                 <div class="info-item">
                     <h3>Accesos</h3>
-                    <p><?= $link['contador_accesos'] ?> visualizaciones</p>
+                    <p><?= $link['accesos_actuales'] ?? 0 ?> visualizaciones</p>
                 </div>
             </div>
         <?php else: ?>

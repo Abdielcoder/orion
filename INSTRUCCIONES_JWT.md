@@ -170,7 +170,7 @@ El token de ejemplo incluido tiene este payload:
 
 ## Sistema de Login Tradicional
 
-El login tradicional (`/auth/login`) se mantiene como fallback pero ya no es necesario para uso normal en el iframe.
+**ELIMINADO COMPLETAMENTE** - El sistema de login tradicional ha sido removido. La aplicación ahora usa únicamente autenticación JWT.
 
 ## Soporte
 

@@ -1189,7 +1189,9 @@
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-          }
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
         });
         
         const data = await response.json();
@@ -1343,6 +1345,9 @@
       console.log('DEBUG - Datos del formulario:');
       console.log('cuota_almacenamiento:', formData.get('cuota_almacenamiento'));
       console.log('cuota_unit:', formData.get('cuota_unit'));
+      console.log('rol:', formData.get('rol'));
+      console.log('email:', formData.get('email'));
+      console.log('nombre:', formData.get('nombre'));
       console.log('isEditing:', isEditing);
       
       const action = isEditing ? 'update' : 'create';
@@ -1351,7 +1356,8 @@
       try {
         const response = await fetch(url, {
           method: 'POST',
-          body: formData
+          body: formData,
+          credentials: 'same-origin'
         });
         
         const data = await response.json();
@@ -1379,7 +1385,8 @@
       try {
         const response = await fetch('/biblioteca/public/index.php/admin/users/toggle-status', {
           method: 'POST',
-          body: formData
+          body: formData,
+          credentials: 'same-origin'
         });
         
         const data = await response.json();
@@ -1406,7 +1413,8 @@
       try {
         const response = await fetch('/biblioteca/public/index.php/admin/users/delete', {
           method: 'POST',
-          body: formData
+          body: formData,
+          credentials: 'same-origin'
         });
         
         const data = await response.json();
@@ -1553,7 +1561,9 @@
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-          }
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
         });
         
         if (!response.ok) {
@@ -1645,24 +1655,41 @@
       }
       
       try {
-        const response = await fetch(`/biblioteca/public/index.php/admin/users/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`/biblioteca/public/index.php/admin/groups/available-users`, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
         const data = await response.json();
         
-        if (data.users && data.users.length > 0) {
-          suggestions.innerHTML = '';
-          data.users.forEach(user => {
-            if (!selectedMembers.has(user.id)) {
-              const suggestion = document.createElement('div');
-              suggestion.className = 'user-suggestion';
-              suggestion.innerHTML = `
-                <i class="fas fa-user"></i>
-                <span>${user.nombre} (${user.email})</span>
-              `;
-              suggestion.onclick = () => addMember(user);
-              suggestions.appendChild(suggestion);
-            }
-          });
-          suggestions.style.display = 'block';
+        if (data.success && data.users && data.users.length > 0) {
+          // Filtrar usuarios que coincidan con la búsqueda y no estén ya seleccionados
+          const filteredUsers = data.users.filter(user => 
+            !selectedMembers.has(user.id) && (
+              user.nombre.toLowerCase().includes(query.toLowerCase()) ||
+              user.email.toLowerCase().includes(query.toLowerCase())
+            )
+          );
+          
+          if (filteredUsers.length > 0) {
+            suggestions.innerHTML = '';
+            filteredUsers.forEach(user => {
+              if (!selectedMembers.has(user.id)) {
+                const suggestion = document.createElement('div');
+                suggestion.className = 'user-suggestion';
+                suggestion.innerHTML = `
+                  <i class="fas fa-user"></i>
+                  <span>${user.nombre} (${user.email})</span>
+                `;
+                suggestion.onclick = () => addMember(user);
+                suggestions.appendChild(suggestion);
+              }
+            });
+            suggestions.style.display = 'block';
+          } else {
+            suggestions.style.display = 'none';
+          }
         } else {
           suggestions.style.display = 'none';
         }
@@ -1716,7 +1743,8 @@
       try {
         const response = await fetch(url, {
           method: 'POST',
-          body: formData
+          body: formData,
+          credentials: 'same-origin'
         });
         
         const data = await response.json();
@@ -1752,14 +1780,243 @@
 
     // Editar grupo
     async function editGroup(groupId) {
-      // Implementar edición de grupo
-      showAlert('Función de editar grupo en desarrollo', 'info');
+      try {
+        // Buscar el grupo en el array de grupos
+        const group = groups.find(g => g.id === groupId);
+        if (!group) {
+          showAlert('Grupo no encontrado', 'danger');
+          return;
+        }
+        
+        // Obtener miembros del grupo
+        const response = await fetch(`/biblioteca/public/index.php/admin/groups/members?group_id=${groupId}`, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
+        const data = await response.json();
+        
+        if (data.success && data.members) {
+          // Configurar modal para edición
+          isEditingGroup = true;
+          currentGroupId = groupId;
+          selectedMembers.clear();
+          
+          // Llenar datos del grupo
+          document.getElementById('groupModalTitle').textContent = 'Editar Grupo';
+          document.getElementById('groupSubmitBtn').textContent = 'Actualizar Grupo';
+          document.getElementById('groupId').value = groupId;
+          document.getElementById('groupName').value = group.nombre;
+          document.getElementById('groupDescription').value = group.descripcion || '';
+          
+          // Agregar miembros actuales al Set
+          data.members.forEach(member => {
+            selectedMembers.add(member.id);
+          });
+          
+          updateSelectedMembersUI();
+          document.getElementById('groupModal').style.display = 'flex';
+        } else {
+          showAlert('Error al cargar miembros del grupo', 'danger');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error al cargar información del grupo', 'danger');
+      }
     }
 
     // Gestionar miembros
     async function manageMembers(groupId) {
-      // Implementar gestión de miembros
-      showAlert('Función de gestión de miembros en desarrollo', 'info');
+      try {
+        // Buscar el grupo
+        const group = groups.find(g => g.id === groupId);
+        if (!group) {
+          showAlert('Grupo no encontrado', 'danger');
+          return;
+        }
+        
+        currentGroupId = groupId;
+        
+        // Cargar miembros actuales del grupo
+        await loadGroupMembers(groupId);
+        
+        // Mostrar modal de gestión de miembros
+        document.getElementById('membersModal').style.display = 'flex';
+        document.getElementById('membersModalTitle').textContent = `Miembros de ${group.nombre}`;
+      } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error al cargar miembros del grupo', 'danger');
+      }
+    }
+    
+    // Cargar miembros del grupo
+    async function loadGroupMembers(groupId) {
+      try {
+        const response = await fetch(`/biblioteca/public/index.php/admin/groups/members?group_id=${groupId}`, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
+        const data = await response.json();
+        
+        if (data.success && data.members) {
+          renderCurrentMembers(data.members);
+        } else {
+          showAlert('Error al cargar miembros', 'danger');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error de conexión', 'danger');
+      }
+    }
+    
+    // Renderizar miembros actuales
+    function renderCurrentMembers(members) {
+      const container = document.getElementById('currentMembers');
+      container.innerHTML = '';
+      
+      if (members.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #999;">No hay miembros en este grupo</p>';
+        return;
+      }
+      
+      members.forEach(member => {
+        const memberDiv = document.createElement('div');
+        memberDiv.className = 'current-member';
+        memberDiv.innerHTML = `
+          <div class="member-info">
+            <i class="fas fa-user"></i>
+            <span><strong>${member.nombre}</strong> (${member.email})</span>
+          </div>
+          <button class="remove-member" onclick="removeMemberFromGroup(${currentGroupId}, ${member.id})" title="Remover del grupo">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        container.appendChild(memberDiv);
+      });
+    }
+    
+    // Remover miembro del grupo
+    async function removeMemberFromGroup(groupId, userId) {
+      if (!confirm('¿Estás seguro de que deseas remover este usuario del grupo?')) {
+        return;
+      }
+      
+      try {
+        const formData = new FormData();
+        formData.append('group_id', groupId);
+        formData.append('user_id', userId);
+        formData.append('_csrf', document.querySelector('input[name="_csrf"]').value);
+        
+        const response = await fetch('/biblioteca/public/index.php/admin/groups/remove-member', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showAlert('Miembro removido exitosamente', 'success');
+          loadGroupMembers(groupId);
+          loadGroups(); // Actualizar la tabla principal
+        } else {
+          showAlert(data.error || 'Error al remover miembro', 'danger');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error de conexión', 'danger');
+      }
+    }
+    
+    // Buscar usuarios para agregar al grupo en el modal de miembros
+    async function searchUsersForModal() {
+      const query = document.getElementById('memberSearchModal').value.trim();
+      const suggestions = document.getElementById('userSuggestionsModal');
+      
+      if (query.length < 2) {
+        suggestions.style.display = 'none';
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/biblioteca/public/index.php/admin/groups/available-users`, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
+        const data = await response.json();
+        
+        if (data.success && data.users && data.users.length > 0) {
+          // Filtrar usuarios que coincidan con la búsqueda
+          const filteredUsers = data.users.filter(user => 
+            user.nombre.toLowerCase().includes(query.toLowerCase()) ||
+            user.email.toLowerCase().includes(query.toLowerCase())
+          );
+          
+          if (filteredUsers.length > 0) {
+            suggestions.innerHTML = '';
+            filteredUsers.forEach(user => {
+              const suggestion = document.createElement('div');
+              suggestion.className = 'user-suggestion';
+              suggestion.innerHTML = `
+                <i class="fas fa-user"></i>
+                <span>${user.nombre} (${user.email})</span>
+              `;
+              suggestion.onclick = () => addMemberToGroup(currentGroupId, user);
+              suggestions.appendChild(suggestion);
+            });
+            suggestions.style.display = 'block';
+          } else {
+            suggestions.style.display = 'none';
+          }
+        } else {
+          suggestions.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error searching users:', error);
+      }
+    }
+    
+    // Agregar miembro al grupo
+    async function addMemberToGroup(groupId, user) {
+      try {
+        const formData = new FormData();
+        formData.append('group_id', groupId);
+        formData.append('user_id', user.id);
+        formData.append('_csrf', document.querySelector('input[name="_csrf"]').value);
+        
+        const response = await fetch('/biblioteca/public/index.php/admin/groups/add-member', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showAlert('Miembro agregado exitosamente', 'success');
+          document.getElementById('memberSearchModal').value = '';
+          document.getElementById('userSuggestionsModal').style.display = 'none';
+          loadGroupMembers(groupId);
+          loadGroups(); // Actualizar la tabla principal
+        } else {
+          showAlert(data.error || 'Error al agregar miembro', 'danger');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error de conexión', 'danger');
+      }
+    }
+    
+    // Cerrar modal de miembros
+    function closeMembersModal() {
+      document.getElementById('membersModal').style.display = 'none';
+      document.getElementById('memberSearchModal').value = '';
+      document.getElementById('userSuggestionsModal').style.display = 'none';
     }
 
     // Eliminar grupo
@@ -1775,7 +2032,8 @@
         
         const response = await fetch('/biblioteca/public/index.php/admin/groups/delete', {
           method: 'POST',
-          body: formData
+          body: formData,
+          credentials: 'same-origin'
         });
         
         const data = await response.json();

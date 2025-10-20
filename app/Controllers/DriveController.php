@@ -25,6 +25,7 @@ class DriveController
         $this->userSettings = new UserSettingsRepository();
     }
 
+
     public function dashboard()
     {
         $uid = (int)Session::get('user_id');
@@ -71,40 +72,85 @@ class DriveController
         $uid = (int)Session::get('user_id');
         
         try {
-            // Obtener archivos compartidos conmigo desde permisos_recursos
+            // Obtener archivos compartidos conmigo directamente
             $stmt = \App\Services\Database::connection()->prepare("
                 SELECT 
                     a.id, a.nombre, a.extension, a.tipo_mime, a.tamaño,
-                    pr.permiso as permission,
-                    pr.fecha_creacion as shared_date,
+                    pa.permiso as permission,
+                    pa.fecha_otorgado as shared_date,
                     u.nombre as owner_name,
                     u.email as owner_email,
-                    'file' as type
-                FROM permisos_recursos pr
-                JOIN archivos a ON pr.recurso_id = a.id AND pr.recurso_tipo = 'archivo'
+                    'file' as type,
+                    'usuario' as shared_via
+                FROM permisos_archivos pa
+                JOIN archivos a ON pa.archivo_id = a.id
                 JOIN usuarios u ON a.propietario_id = u.id
-                WHERE pr.usuario_id = ? AND pr.activo = 1
-                AND (pr.fecha_expiracion IS NULL OR pr.fecha_expiracion > NOW())
+                WHERE pa.usuario_id = ? AND pa.activo = 1
+                AND pa.tipo_comparticion = 'usuario'
+                AND (pa.fecha_expiracion IS NULL OR pa.fecha_expiracion > NOW())
                 
                 UNION ALL
                 
+                -- Archivos compartidos a través de grupos
                 SELECT 
-                    c.id, c.nombre, null as extension, null as tipo_mime, null as tamaño,
-                    pr.permiso as permission,
-                    pr.fecha_creacion as shared_date,
+                    a.id, a.nombre, a.extension, a.tipo_mime, a.tamaño,
+                    pa.permiso as permission,
+                    pa.fecha_otorgado as shared_date,
                     u.nombre as owner_name,
                     u.email as owner_email,
-                    'folder' as type
-                FROM permisos_recursos pr
-                JOIN carpetas c ON pr.recurso_id = c.id AND pr.recurso_tipo = 'carpeta'
+                    'file' as type,
+                    CONCAT('grupo: ', g.nombre) as shared_via
+                FROM permisos_archivos pa
+                JOIN archivos a ON pa.archivo_id = a.id
+                JOIN usuarios u ON a.propietario_id = u.id
+                JOIN grupos g ON pa.grupo_id = g.id
+                JOIN grupo_miembros gm ON g.id = gm.grupo_id
+                WHERE gm.usuario_id = ? AND pa.activo = 1
+                AND pa.tipo_comparticion = 'grupo'
+                AND (pa.fecha_expiracion IS NULL OR pa.fecha_expiracion > NOW())
+                
+                UNION ALL
+                
+                -- Carpetas compartidas conmigo directamente
+                SELECT 
+                    c.id, c.nombre, null as extension, null as tipo_mime, null as tamaño,
+                    pc.permiso as permission,
+                    pc.fecha_otorgado as shared_date,
+                    u.nombre as owner_name,
+                    u.email as owner_email,
+                    'folder' as type,
+                    'usuario' as shared_via
+                FROM permisos_carpetas pc
+                JOIN carpetas c ON pc.carpeta_id = c.id
                 JOIN usuarios u ON c.propietario_id = u.id
-                WHERE pr.usuario_id = ? AND pr.activo = 1
-                AND (pr.fecha_expiracion IS NULL OR pr.fecha_expiracion > NOW())
+                WHERE pc.usuario_id = ? AND pc.activo = 1
+                AND pc.tipo_comparticion = 'usuario'
+                AND (pc.fecha_expiracion IS NULL OR pc.fecha_expiracion > NOW())
+                
+                UNION ALL
+                
+                -- Carpetas compartidas a través de grupos
+                SELECT 
+                    c.id, c.nombre, null as extension, null as tipo_mime, null as tamaño,
+                    pc.permiso as permission,
+                    pc.fecha_otorgado as shared_date,
+                    u.nombre as owner_name,
+                    u.email as owner_email,
+                    'folder' as type,
+                    CONCAT('grupo: ', g.nombre) as shared_via
+                FROM permisos_carpetas pc
+                JOIN carpetas c ON pc.carpeta_id = c.id
+                JOIN usuarios u ON c.propietario_id = u.id
+                JOIN grupos g ON pc.grupo_id = g.id
+                JOIN grupo_miembros gm ON g.id = gm.grupo_id
+                WHERE gm.usuario_id = ? AND pc.activo = 1
+                AND pc.tipo_comparticion = 'grupo'
+                AND (pc.fecha_expiracion IS NULL OR pc.fecha_expiracion > NOW())
                 
                 ORDER BY shared_date DESC
             ");
             
-            $stmt->execute([$uid, $uid]);
+            $stmt->execute([$uid, $uid, $uid, $uid]);
             $sharedItems = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             
             return Response::json([
@@ -131,15 +177,28 @@ class DriveController
         }
 
         try {
-            // Verificar si el usuario tiene permisos para acceder a esta carpeta
+            // Verificar si el usuario tiene permisos para acceder a esta carpeta (directamente o por grupo)
             $stmt = Database::connection()->prepare("
-                SELECT pr.permiso, c.nombre as folder_name, c.propietario_id
-                FROM permisos_recursos pr
-                JOIN carpetas c ON pr.recurso_id = c.id 
-                WHERE pr.recurso_id = ? AND pr.usuario_id = ? AND pr.recurso_tipo = 'carpeta' 
-                AND pr.activo = 1 AND (pr.fecha_expiracion IS NULL OR pr.fecha_expiracion > NOW())
+                SELECT pc.permiso, c.nombre as folder_name, c.propietario_id
+                FROM permisos_carpetas pc
+                JOIN carpetas c ON pc.carpeta_id = c.id 
+                WHERE pc.carpeta_id = ? AND pc.usuario_id = ? 
+                AND pc.tipo_comparticion = 'usuario'
+                AND pc.activo = 1 AND (pc.fecha_expiracion IS NULL OR pc.fecha_expiracion > NOW())
+                
+                UNION ALL
+                
+                SELECT pc.permiso, c.nombre as folder_name, c.propietario_id
+                FROM permisos_carpetas pc
+                JOIN carpetas c ON pc.carpeta_id = c.id
+                JOIN grupos g ON pc.grupo_id = g.id
+                JOIN grupo_miembros gm ON g.id = gm.grupo_id
+                WHERE pc.carpeta_id = ? AND gm.usuario_id = ? 
+                AND pc.tipo_comparticion = 'grupo'
+                AND pc.activo = 1 AND (pc.fecha_expiracion IS NULL OR pc.fecha_expiracion > NOW())
+                LIMIT 1
             ");
-            $stmt->execute([$folderId, $uid]);
+            $stmt->execute([$folderId, $uid, $folderId, $uid]);
             $permission = $stmt->fetch(\PDO::FETCH_ASSOC);
 
             if (!$permission) {
@@ -222,25 +281,9 @@ class DriveController
                 return Response::json(['error' => 'Archivo no encontrado'], 404);
             }
 
-            // Verificar permisos - debe ser propietario o tener permisos compartidos
-            $hasAccess = false;
-            
-            // Check if user owns the file
-            if ($fileData['propietario_id'] == $uid) {
-                $hasAccess = true;
-            } else {
-                // Check if file is shared with user
-                $stmt = Database::connection()->prepare("
-                    SELECT COUNT(*) as count FROM permisos_recursos 
-                    WHERE recurso_id = ? AND usuario_id = ? AND recurso_tipo = 'archivo' 
-                    AND activo = 1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW())
-                ");
-                $stmt->execute([$fileId, $uid]);
-                $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-                $hasAccess = $result['count'] > 0;
-            }
-
-            if (!$hasAccess) {
+            // Verificar permisos usando método helper
+            if (!$this->hasFileAccess($uid, $fileId, $fileData)) {
+                error_log("DEBUG getFileInfo - Access denied for file $fileId by user $uid");
                 return Response::json(['error' => 'No tienes permisos para acceder a este archivo'], 403);
             }
 
@@ -299,24 +342,8 @@ class DriveController
                 return;
             }
 
-            // Verificar permisos
-            $hasAccess = false;
-            
-            if ($fileData['propietario_id'] == $uid) {
-                $hasAccess = true;
-            } else {
-                // Check if file is shared with user
-                $stmt = Database::connection()->prepare("
-                    SELECT COUNT(*) as count FROM permisos_recursos 
-                    WHERE recurso_id = ? AND usuario_id = ? AND recurso_tipo = 'archivo' 
-                    AND activo = 1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW())
-                ");
-                $stmt->execute([$fileId, $uid]);
-                $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-                $hasAccess = $result['count'] > 0;
-            }
-
-            if (!$hasAccess) {
+            // Verificar permisos usando método helper
+            if (!$this->hasFileAccess($uid, $fileId, $fileData)) {
                 http_response_code(403);
                 echo 'No tienes permisos para acceder a este archivo';
                 return;
@@ -386,24 +413,8 @@ class DriveController
                 return;
             }
 
-            // Verificar permisos
-            $hasAccess = false;
-            
-            if ($fileData['propietario_id'] == $uid) {
-                $hasAccess = true;
-            } else {
-                // Check if file is shared with user
-                $stmt = Database::connection()->prepare("
-                    SELECT COUNT(*) as count FROM permisos_recursos 
-                    WHERE recurso_id = ? AND usuario_id = ? AND recurso_tipo = 'archivo' 
-                    AND activo = 1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW())
-                ");
-                $stmt->execute([$fileId, $uid]);
-                $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-                $hasAccess = $result['count'] > 0;
-            }
-
-            if (!$hasAccess) {
+            // Verificar permisos usando método helper
+            if (!$this->hasFileAccess($uid, $fileId, $fileData)) {
                 http_response_code(403);
                 echo 'No tienes permisos para acceder a este archivo';
                 return;
@@ -893,6 +904,66 @@ class DriveController
         $sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
         $i = floor(log($bytes) / log($k));
         return round($bytes / pow($k, $i), 2) . ' ' . $sizes[$i];
+    }
+
+    /**
+     * Verificar si un usuario tiene acceso a un archivo
+     * Verifica: propiedad, permisos directos, permisos de carpeta (usuario y grupo)
+     */
+    private function hasFileAccess(int $userId, int $fileId, array $fileData): bool
+    {
+        // Si es el propietario, tiene acceso
+        if ($fileData['propietario_id'] == $userId) {
+            return true;
+        }
+
+        // Verificar permisos directos del archivo
+        $stmt = Database::connection()->prepare("
+            SELECT COUNT(*) as count FROM permisos_archivos 
+            WHERE archivo_id = ? AND usuario_id = ? 
+            AND activo = 1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW())
+        ");
+        $stmt->execute([$fileId, $userId]);
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+        
+        if ($result['count'] > 0) {
+            return true;
+        }
+
+        // Si el archivo está en una carpeta, verificar permisos heredados
+        if ($fileData['carpeta_id']) {
+            // Verificar permisos directos de carpeta (compartido con usuario)
+            $stmt = Database::connection()->prepare("
+                SELECT COUNT(*) as count FROM permisos_carpetas 
+                WHERE carpeta_id = ? AND usuario_id = ? 
+                AND tipo_comparticion = 'usuario'
+                AND activo = 1 AND (fecha_expiracion IS NULL OR fecha_expiracion > NOW())
+            ");
+            $stmt->execute([$fileData['carpeta_id'], $userId]);
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if ($result['count'] > 0) {
+                return true;
+            }
+
+            // Verificar permisos de carpeta a través de grupos
+            $stmt = Database::connection()->prepare("
+                SELECT COUNT(*) as count FROM permisos_carpetas pc
+                JOIN grupos g ON pc.grupo_id = g.id
+                JOIN grupo_miembros gm ON g.id = gm.grupo_id
+                WHERE pc.carpeta_id = ? AND gm.usuario_id = ? 
+                AND pc.tipo_comparticion = 'grupo'
+                AND pc.activo = 1 AND (pc.fecha_expiracion IS NULL OR pc.fecha_expiracion > NOW())
+            ");
+            $stmt->execute([$fileData['carpeta_id'], $userId]);
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if ($result['count'] > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

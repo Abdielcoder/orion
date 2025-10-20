@@ -18,6 +18,7 @@ class ShareController
         $this->files = new FileRepository();
     }
 
+
     public function createLink()
     {
         $uid = (int)Session::get('user_id');
@@ -66,7 +67,10 @@ class ShareController
             return;
         }
         
-        if ((int)$link['limite_descargas'] > 0 && (int)$link['contador_accesos'] >= (int)$link['limite_descargas']) {
+        // Verificar límite de accesos (usar 'limite_accesos' y 'accesos_actuales')
+        $limiteAccesos = (int)($link['limite_accesos'] ?? 0);
+        $accesosActuales = (int)($link['accesos_actuales'] ?? 0);
+        if ($limiteAccesos > 0 && $accesosActuales >= $limiteAccesos) {
             http_response_code(429);
             $requiresPassword = false;
             $passwordError = '';
@@ -80,15 +84,17 @@ class ShareController
             return;
         }
         
-        // Verificar autenticación para enlaces protegidos
-        if ($link['requiere_password'] && !$this->isLinkAuthenticated($token)) {
+        // Verificar autenticación para enlaces protegidos (usar 'requiere_autenticacion' o 'password')
+        $requiereAuth = !empty($link['password']) || !empty($link['contraseña']) || ($link['requiere_autenticacion'] ?? false);
+        if ($requiereAuth && !$this->isLinkAuthenticated($token)) {
             $requiresAuth = false;
             $authError = '';
             
-            // Verificar si tiene contraseña hasheada (contraseña tradicional)
-            if (!empty($link['password_hash'])) {
+            // Verificar si tiene contraseña hasheada (en columna 'password')
+            if (!empty($link['password']) && strlen($link['password']) > 10) {
+                // Asumimos que es un hash si tiene más de 10 caracteres
                 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['password'])) {
-                    if (password_verify($_POST['password'], $link['password_hash'])) {
+                    if (password_verify($_POST['password'], $link['password'])) {
                         // Contraseña correcta, marcar como autenticado
                         $this->setLinkAuthenticated($token);
                     } else {
@@ -100,9 +106,10 @@ class ShareController
                 }
             }
             // Verificar si tiene código de acceso (almacenado en texto plano en 'contraseña')
-            elseif (!empty($link['contraseña'])) {
+            elseif (!empty($link['contraseña']) || (!empty($link['password']) && strlen($link['password']) <= 10)) {
+                $codigo = !empty($link['contraseña']) ? $link['contraseña'] : $link['password'];
                 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['access_code'])) {
-                    if (strtoupper(trim($_POST['access_code'])) === strtoupper(trim($link['contraseña']))) {
+                    if (strtoupper(trim($_POST['access_code'])) === strtoupper(trim($codigo))) {
                         // Código correcto, marcar como autenticado
                         $this->setLinkAuthenticated($token);
                     } else {
@@ -117,7 +124,7 @@ class ShareController
             if ($requiresAuth) {
                 $requiresPassword = $requiresAuth; // Para compatibilidad con la vista
                 $passwordError = $authError; // Para compatibilidad con la vista
-                $hasAccessCode = !empty($link['contraseña']) && empty($link['password_hash']);
+                $hasAccessCode = !empty($link['contraseña']) || (!empty($link['password']) && strlen($link['password']) <= 10);
                 $permissions = ['can_download' => false, 'can_print' => false, 'can_copy' => false];
                 $file = null;
                 $iconClass = '';

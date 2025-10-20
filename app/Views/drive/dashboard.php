@@ -90,6 +90,16 @@
     body.light-theme .context-menu { background: #ffffff; border-color: #e5e7eb; }
     body.light-theme .context-menu-item:hover { background: #e5f2ff; }
     body.light-theme .context-menu-separator { background: #e5e7eb; }
+    
+    /* Context menu icons */
+    .context-menu-item i { color: #ffffff !important; }
+    body.light-theme .context-menu-item i { color: #374151 !important; }
+    
+    /* More specific rules for context menu icons */
+    #context-menu .context-menu-item i { color: #ffffff !important; }
+    #empty-context-menu .context-menu-item i { color: #ffffff !important; }
+    body.light-theme #context-menu .context-menu-item i { color: #374151 !important; }
+    body.light-theme #empty-context-menu .context-menu-item i { color: #374151 !important; }
 
     /* Modals */
     body.light-theme .modal { background: #ffffff; border-color: #e5e7eb; }
@@ -1763,11 +1773,18 @@
         <i class="fas fa-users"></i>
         <span>Compartido conmigo</span>
       </div>
+      <div class="tree-item" onclick="loadMyShares()" id="my-shares-item">
+        <i class="fas fa-share-alt"></i>
+        <span>Mis Compartidos</span>
+      </div>
       <div id="folder-tree"></div>
     </div>
 
     <!-- Content -->
     <div class="content">
+      <!-- CSRF Token for AJAX requests -->
+      <input type="hidden" name="_csrf" value="<?php echo htmlspecialchars(\App\Services\Session::get('csrf_token')); ?>">
+      
       <!-- Toolbar -->
       <div class="toolbar">
         <button class="btn" onclick="createFolder()">
@@ -1861,29 +1878,29 @@
   <!-- Context Menu -->
   <div class="context-menu" id="context-menu">
     <div class="context-menu-item" onclick="openSelected()">
-      <i class="fas fa-folder-open" style="width: 16px; margin-right: 8px;"></i>
+      <i class="fas fa-folder-open" style="width: 16px; margin-right: 8px; color: #ffffff !important;"></i>
       Abrir
     </div>
     <div class="context-menu-item" onclick="renameSelected()">
-      <i class="fas fa-edit" style="width: 16px; margin-right: 8px;"></i>
+      <i class="fas fa-edit" style="width: 16px; margin-right: 8px; color: #ffffff !important;"></i>
       Renombrar
     </div>
     <div class="context-menu-item" onclick="setLabelSelected()" id="label-menu-item">
-      <i class="fas fa-tag" style="width: 16px; margin-right: 8px;"></i>
+      <i class="fas fa-tag" style="width: 16px; margin-right: 8px; color: #ffffff !important;"></i>
       Etiqueta
     </div>
     <div class="context-menu-item" onclick="setIconSelected()" id="icon-menu-item">
-      <i class="fas fa-icons" style="width: 16px; margin-right: 8px;"></i>
+      <i class="fas fa-icons" style="width: 16px; margin-right: 8px; color: #ffffff !important;"></i>
       Icono
     </div>
     <div class="context-menu-separator"></div>
     <div class="context-menu-item" onclick="shareSelected()">
-      <i class="fas fa-share-alt" style="width: 16px; margin-right: 8px;"></i>
+      <i class="fas fa-share-alt" style="width: 16px; margin-right: 8px; color: #ffffff !important;"></i>
       Compartir
     </div>
     <div class="context-menu-separator"></div>
     <div class="context-menu-item" onclick="deleteSelected()">
-      <i class="fas fa-trash" style="width: 16px; margin-right: 8px;"></i>
+      <i class="fas fa-trash" style="width: 16px; margin-right: 8px; color: #ffffff !important;"></i>
       Eliminar
     </div>
   </div>
@@ -1891,19 +1908,19 @@
   <!-- Empty Area Context Menu -->
   <div class="context-menu" id="empty-context-menu">
     <div class="context-menu-item" onclick="createFolder()">
-      <i class="fas fa-folder-plus" style="width: 16px; margin-right: 8px;"></i>
+      <i class="fas fa-folder-plus" style="width: 16px; margin-right: 8px; color: #ffffff !important;"></i>
       Nueva carpeta
     </div>
     <div class="context-menu-item" onclick="openBackgroundPicker()">
-      <i class="fas fa-image" style="width: 16px; margin-right: 8px;"></i>
+      <i class="fas fa-image" style="width: 16px; margin-right: 8px; color: #ffffff !important;"></i>
       Cambiar fondo
     </div>
     <div class="context-menu-item" onclick="openBackgroundSolidPicker()">
-      <i class="fas fa-palette" style="width: 16px; margin-right: 8px;"></i>
+      <i class="fas fa-palette" style="width: 16px; margin-right: 8px; color: #ffffff !important;"></i>
       Fondo sólido
     </div>
     <div class="context-menu-item" onclick="clearExplorerBackground()">
-      <i class="fas fa-ban" style="width: 16px; margin-right: 8px;"></i>
+      <i class="fas fa-ban" style="width: 16px; margin-right: 8px; color: #ffffff !important;"></i>
       Quitar fondo
     </div>
   </div>
@@ -1984,6 +2001,101 @@
       <div class="modal-buttons">
         <button class="secondary" onclick="closeMoveModal()">Cancelar</button>
         <button class="primary" onclick="confirmMove()">Mover</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Share Modal -->
+  <div class="modal-overlay" id="edit-share-modal-overlay" style="display: none;">
+    <div class="modal" id="edit-share-modal" style="min-width: 600px; max-width: 800px; max-height: 90vh; overflow-y: auto;">
+      <h3><i class="fas fa-edit"></i> Gestionar Acceso al Recurso</h3>
+      
+      <div style="margin: 16px 0; padding: 12px; background: var(--hover-bg); border-radius: 6px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-file" id="edit-share-icon" style="color: var(--primary-color); font-size: 20px;"></i>
+          <div>
+            <div style="font-weight: 600; color: var(--text-primary);" id="edit-share-resource-name">Recurso</div>
+            <div style="font-size: 12px; color: var(--text-secondary);" id="edit-share-resource-type-text">Archivo/Carpeta</div>
+          </div>
+        </div>
+      </div>
+      
+      <input type="hidden" id="edit-share-resource-id">
+      <input type="hidden" id="edit-share-resource-type">
+      
+      <!-- Lista de usuarios/grupos con acceso -->
+      <div style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <label style="font-weight: 600; font-size: 16px;">Usuarios y Grupos con Acceso</label>
+          <button onclick="showAddShareDialog()" 
+                  style="padding: 6px 12px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+            <i class="fas fa-plus"></i> Agregar
+          </button>
+        </div>
+        
+        <div id="shares-list" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 8px;">
+          <!-- Se llenará dinámicamente -->
+        </div>
+      </div>
+      
+      <!-- Panel para agregar nuevo usuario/grupo (oculto por defecto) -->
+      <div id="add-share-panel" style="display: none; margin-bottom: 20px; padding: 16px; background: var(--hover-bg); border-radius: 6px; border: 2px dashed var(--border-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="margin: 0; color: var(--text-primary);">Agregar Usuario o Grupo</h4>
+          <button onclick="hideAddShareDialog()" 
+                  style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <label>Buscar Usuario o Grupo</label>
+        <input type="text" id="search-share-input" placeholder="Escribe el nombre o email..." 
+               onkeyup="searchUsersAndGroups()" 
+               style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); margin-bottom: 12px;">
+        
+        <div id="search-share-results" style="max-height: 200px; overflow-y: auto; display: none;">
+          <!-- Resultados de búsqueda -->
+        </div>
+        
+        <div id="selected-share-preview" style="display: none; margin-top: 12px; padding: 12px; background: var(--card-bg); border-radius: 4px;">
+          <!-- Vista previa del usuario/grupo seleccionado -->
+        </div>
+        
+        <div id="new-share-options" style="display: none; margin-top: 16px;">
+          <label>Nivel de Permiso</label>
+          <select id="new-share-permission" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); margin-bottom: 12px;">
+            <option value="lector">👁️ Lector - Solo visualizar</option>
+            <option value="editor">✏️ Editor - Ver, comentar y editar</option>
+            <option value="propietario">👑 Propietario - Control total</option>
+          </select>
+          
+          <label>Fecha de Expiración (opcional)</label>
+          <input type="date" id="new-share-expiry" style="width: 100%; padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); margin-bottom: 12px;">
+          
+          <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="new-share-can-download" checked style="cursor: pointer;">
+              <span style="font-size: 13px;">📥 Descargar</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="new-share-can-print" checked style="cursor: pointer;">
+              <span style="font-size: 13px;">🖨️ Imprimir</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="checkbox" id="new-share-can-copy" checked style="cursor: pointer;">
+              <span style="font-size: 13px;">📋 Copiar</span>
+            </label>
+          </div>
+          
+          <button onclick="addNewShare()" 
+                  style="width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
+            <i class="fas fa-check"></i> Confirmar y Agregar
+          </button>
+        </div>
+      </div>
+      
+      <div class="modal-buttons">
+        <button class="secondary" onclick="closeEditShareModal()">Cerrar</button>
       </div>
     </div>
   </div>
@@ -2562,10 +2674,25 @@
     async function loadFolder(folderId) {
       try {
         console.log('Loading folder:', folderId);
+        
+        // Reset view state variables when returning to main drive
+        if (folderId === 0) {
+          isMySharesView = false;
+          isSharedWithMeView = false;
+          console.log('Reset view states - returning to main drive');
+          
+          // Clear any special view content that might be visible
+          clearSpecialViewContent();
+        }
+        
         const url = '/biblioteca/public/index.php/drive/list?folder=' + folderId;
         console.log('Fetching URL:', url);
         
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
         console.log('Response status:', response.status);
         
         if (!response.ok) {
@@ -2580,8 +2707,15 @@
         updateBreadcrumb(folderId);
         clearSelection();
         
+        // Update sidebar selection
+        if (folderId === 0) {
+          updateSidebarSelection('drive');
+        } else {
+          updateSidebarSelection('folder', folderId);
+        }
+        
         // Reinitialize column view if active
-        if (currentView === 'columns' && !isSharedWithMeView) {
+        if (currentView === 'columns' && !isSharedWithMeView && !isMySharesView) {
           setTimeout(() => {
             initializeColumnView();
           }, 100);
@@ -2601,15 +2735,106 @@
         item.classList.toggle('active', parseInt(item.dataset.folder) === folderId);
       });
     }
+
+    // Clear special view content when returning to normal drive
+    function clearSpecialViewContent() {
+      console.log('Clearing special view content');
+      
+      // Clear any custom content that might be in the grid view
+      const gridView = document.getElementById('grid-view');
+      if (gridView) {
+        // Remove any custom tables or content that might be from special views
+        const customTables = gridView.querySelectorAll('.my-shares-table, .shared-content-table');
+        customTables.forEach(table => {
+          if (table.parentNode) {
+            table.parentNode.removeChild(table);
+          }
+        });
+      }
+      
+      // Clear any custom content in list view
+      const listView = document.getElementById('list-view');
+      if (listView) {
+        const customTables = listView.querySelectorAll('.my-shares-table, .shared-content-table');
+        customTables.forEach(table => {
+          if (table.parentNode) {
+            table.parentNode.removeChild(table);
+          }
+        });
+      }
+      
+      // Clear any custom content in column view
+      const columnView = document.getElementById('column-view');
+      if (columnView) {
+        const customTables = columnView.querySelectorAll('.my-shares-table, .shared-content-table');
+        customTables.forEach(table => {
+          if (table.parentNode) {
+            table.parentNode.removeChild(table);
+          }
+        });
+      }
+      
+      // Reset any custom styling or classes that might have been applied
+      document.querySelectorAll('.content').forEach(content => {
+        content.classList.remove('my-shares-content', 'shared-content');
+      });
+    }
+
+    // Clear normal drive content when loading special views
+    function clearNormalDriveContent() {
+      console.log('Clearing normal drive content');
+      
+      // Clear grid view items
+      const gridView = document.getElementById('grid-view');
+      if (gridView) {
+        // Remove all folder and file items
+        const items = gridView.querySelectorAll('.folder-item, .file-item');
+        items.forEach(item => {
+          if (item.parentNode) {
+            item.parentNode.removeChild(item);
+          }
+        });
+      }
+      
+      // Clear list view items
+      const listView = document.getElementById('list-view');
+      if (listView) {
+        const items = listView.querySelectorAll('.folder-item, .file-item');
+        items.forEach(item => {
+          if (item.parentNode) {
+            item.parentNode.removeChild(item);
+          }
+        });
+      }
+      
+      // Clear column view items
+      const columnView = document.getElementById('column-view');
+      if (columnView) {
+        const items = columnView.querySelectorAll('.folder-item, .file-item');
+        items.forEach(item => {
+          if (item.parentNode) {
+            item.parentNode.removeChild(item);
+          }
+        });
+      }
+    }
     
     // Load shared with me files
     async function loadSharedWithMe() {
       try {
         isSharedWithMeView = true;
-        console.log('Loading shared with me files');
+        isMySharesView = false;
+        console.log('Loading shared with me files - resetting my shares view');
+        
+        // Clear normal drive content before loading special view
+        clearNormalDriveContent();
         const url = '/biblioteca/public/index.php/drive/shared-with-me';
         
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
         console.log('Response status:', response.status);
         
         if (!response.ok) {
@@ -2654,7 +2879,11 @@
         console.log('Loading shared folder contents:', folderId);
         const url = '/biblioteca/public/index.php/drive/shared-folder-contents?folder_id=' + folderId;
         
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
         console.log('Response status:', response.status);
         
         if (!response.ok) {
@@ -2721,6 +2950,851 @@
       }
     }
     
+    // Load My Shares (recursos compartidos POR el usuario)
+    let isMySharesView = false;
+    
+    async function loadMyShares() {
+      try {
+        isMySharesView = true;
+        isSharedWithMeView = false;
+        console.log('Loading my shares - resetting shared with me view');
+        
+        // Clear normal drive content before loading special view
+        clearNormalDriveContent();
+        
+        const url = '/biblioteca/public/index.php/sharing/my-shares';
+        const response = await fetch(url, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
+        
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        
+        const data = await response.json();
+        console.log('My shares data received:', data);
+        
+        if (data.success && data.shares) {
+          currentFolder = 'my-shares';
+          renderMySharesTable(data.shares);
+          updateBreadcrumbForMyShares();
+          updateSidebarSelection('my-shares');
+          clearSelection();
+        } else {
+          showError(data.error || 'Error al cargar compartidos');
+        }
+      } catch (error) {
+        console.error('Error loading my shares:', error);
+        showError('Error al cargar recursos compartidos');
+      }
+    }
+    
+    // Renderizar tabla de Mis Compartidos
+    function renderMySharesTable(shares) {
+      const gridView = document.getElementById('grid-view');
+      const listView = document.getElementById('list-view');
+      const columnContainer = document.getElementById('column-container');
+      
+      // Ocultar vistas de grid/list/columns y mostrar tabla personalizada
+      gridView.style.display = 'none';
+      listView.style.display = 'none';
+      if (columnContainer) columnContainer.style.display = 'none';
+      
+      // Crear contenedor de tabla si no existe
+      let tableContainer = document.getElementById('my-shares-table-container');
+      if (!tableContainer) {
+        tableContainer = document.createElement('div');
+        tableContainer.id = 'my-shares-table-container';
+        tableContainer.style.display = 'block';
+        tableContainer.style.padding = '20px';
+        tableContainer.style.overflowX = 'auto';
+        gridView.parentElement.appendChild(tableContainer);
+      }
+      
+      tableContainer.style.display = 'block';
+      
+      // Construir HTML de la tabla
+      let html = `
+        <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <h2 style="color: var(--text-primary); margin: 0 0 10px 0;">
+              <i class="fas fa-share-alt"></i> Mis Recursos Compartidos
+            </h2>
+            <p style="color: var(--text-secondary); margin: 0;">
+              Gestiona todos los archivos y carpetas que has compartido con otros usuarios y grupos
+            </p>
+          </div>
+          
+          <div id="bulk-actions-bar" style="display: none; gap: 10px; align-items: center;">
+            <span id="selected-count" style="color: var(--text-secondary); font-size: 14px; margin-right: 10px;">0 seleccionados</span>
+            <button onclick="revokeSelectedShares()" 
+                    style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; transition: opacity 0.2s; display: flex; align-items: center; gap: 6px;"
+                    onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+              <i class="fas fa-times-circle"></i> Revocar Seleccionados
+            </button>
+            <button onclick="clearShareSelection()" 
+                    style="padding: 8px 16px; background: var(--secondary-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; font-size: 14px; transition: opacity 0.2s;"
+                    onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+              Cancelar
+            </button>
+          </div>
+        </div>
+        
+        <table class="my-shares-table" style="width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <thead>
+            <tr style="background: var(--primary-color); color: white;">
+              <th style="padding: 12px; text-align: center; width: 40px;">
+                <input type="checkbox" id="select-all-shares" onchange="toggleAllShares(this.checked)" 
+                       style="cursor: pointer; width: 18px; height: 18px;" title="Seleccionar todo">
+              </th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Recurso</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Tipo</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Compartido con</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Permiso</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Fecha</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Expira</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Opciones</th>
+              <th style="padding: 12px; text-align: center; font-weight: 600;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      if (shares.length === 0) {
+        html += `
+          <tr>
+            <td colspan="9" style="padding: 40px; text-align: center; color: var(--text-secondary);">
+              <i class="fas fa-share-alt" style="font-size: 48px; opacity: 0.3; margin-bottom: 10px;"></i>
+              <p style="margin: 0;">No has compartido ningún recurso aún</p>
+            </td>
+          </tr>
+        `;
+      } else {
+        shares.forEach(share => {
+          const typeIcon = share.resource_type === 'carpeta' ? 'fa-folder' : 'fa-file';
+          const typeLabel = share.resource_type === 'carpeta' ? 'Carpeta' : 'Archivo';
+          const sharedWithType = share.tipo_comparticion === 'grupo' ? 'Grupo' : 'Usuario';
+          const sharedWithIcon = share.tipo_comparticion === 'grupo' ? 'fa-users' : 'fa-user';
+          const permissionLabel = share.permiso === 'lector' ? 'Lector' : share.permiso === 'editor' ? 'Editor' : 'Propietario';
+          const permissionColor = share.permiso === 'lector' ? '#6c757d' : share.permiso === 'editor' ? '#0d6efd' : '#198754';
+          const expiryDate = share.expiry_date ? new Date(share.expiry_date).toLocaleDateString('es-ES') : 'Sin límite';
+          const sharedDate = new Date(share.shared_date).toLocaleDateString('es-ES');
+          
+          const downloadIcon = share.puede_descargar ? '✓' : '✗';
+          const printIcon = share.puede_imprimir ? '✓' : '✗';
+          const copyIcon = share.puede_copiar ? '✓' : '✗';
+          
+          html += `
+            <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='transparent'">
+              <td style="padding: 12px; text-align: center;">
+                <input type="checkbox" class="share-checkbox" data-share-id="${share.share_id}" data-resource-type="${share.resource_type}" data-resource-name="${share.resource_name}" 
+                       onchange="updateShareSelection()" 
+                       style="cursor: pointer; width: 18px; height: 18px;">
+              </td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <i class="fas ${typeIcon}" style="color: var(--primary-color); font-size: 18px;"></i>
+                  <span style="color: var(--text-primary); font-weight: 500;">${share.resource_name}</span>
+                </div>
+              </td>
+              <td style="padding: 12px; color: var(--text-secondary);">${typeLabel}</td>
+              <td style="padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fas ${sharedWithIcon}" style="color: var(--accent-color); font-size: 14px;"></i>
+                  <div>
+                    <div style="color: var(--text-primary); font-weight: 500;">${share.shared_with_display || share.shared_with_name}</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">${sharedWithType}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="padding: 12px;">
+                <span style="padding: 4px 8px; border-radius: 4px; background: ${permissionColor}20; color: ${permissionColor}; font-size: 12px; font-weight: 600;">
+                  ${permissionLabel}
+                </span>
+              </td>
+              <td style="padding: 12px; color: var(--text-secondary); font-size: 14px;">${sharedDate}</td>
+              <td style="padding: 12px; color: var(--text-secondary); font-size: 14px;">${expiryDate}</td>
+              <td style="padding: 12px;">
+                <div style="display: flex; gap: 8px; font-size: 12px;">
+                  <span title="Descargar" style="color: ${share.puede_descargar ? '#198754' : '#dc3545'};">📥 ${downloadIcon}</span>
+                  <span title="Imprimir" style="color: ${share.puede_imprimir ? '#198754' : '#dc3545'};">🖨️ ${printIcon}</span>
+                  <span title="Copiar" style="color: ${share.puede_copiar ? '#198754' : '#dc3545'};">📋 ${copyIcon}</span>
+                </div>
+              </td>
+              <td style="padding: 12px; text-align: center;">
+                <div style="display: flex; gap: 8px; justify-content: center;">
+                  <button onclick="editShare(${share.share_id}, '${share.resource_type}')" 
+                          style="padding: 6px 12px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; transition: opacity 0.2s;"
+                          onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'"
+                          title="Editar permisos">
+                    <i class="fas fa-edit"></i> Editar
+                  </button>
+                  <button onclick='removeShare(${share.share_id}, "${share.resource_type}", ${JSON.stringify(share.resource_name)})' 
+                          style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; transition: opacity 0.2s;"
+                          onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'"
+                          title="Revocar acceso">
+                    <i class="fas fa-times"></i> Revocar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+      }
+      
+      html += `
+          </tbody>
+        </table>
+      `;
+      
+      tableContainer.innerHTML = html;
+    }
+    
+    // Actualizar breadcrumb para My Shares
+    function updateBreadcrumbForMyShares() {
+      const breadcrumb = document.getElementById('breadcrumb');
+      if (breadcrumb) {
+        breadcrumb.innerHTML = `
+          <span class="breadcrumb-item" onclick="loadFolder(0)">
+            <i class="fas fa-hdd"></i> DRIVE
+          </span>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-item active">
+            <i class="fas fa-share-alt"></i> Mis Compartidos
+          </span>
+        `;
+      }
+    }
+    
+    // Editar un compartido
+    let currentEditingShare = null;
+    
+    // Variables globales para gestión de compartidos
+    let currentResourceId = null;
+    let currentResourceType = null;
+    let currentResourceName = null;
+    let selectedShareTarget = null;
+
+    async function editShare(shareId, resourceType) {
+      console.log('editShare called:', {shareId, resourceType});
+      
+      try {
+        // Obtener información del recurso desde la tabla de compartidos
+        const response = await fetch('/biblioteca/public/index.php/sharing/my-shares', {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
+        
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.shares) {
+          const share = data.shares.find(s => s.share_id === shareId && s.resource_type === resourceType);
+          
+          if (!share) {
+            showError('No se encontró la compartición');
+            return;
+          }
+          
+          // Configurar variables globales
+          currentResourceId = share.resource_id;
+          currentResourceType = resourceType;
+          currentResourceName = share.resource_name;
+          
+          // Poblar información del recurso
+          document.getElementById('edit-share-resource-id').value = share.resource_id;
+          document.getElementById('edit-share-resource-type').value = resourceType;
+          document.getElementById('edit-share-resource-name').textContent = share.resource_name;
+          document.getElementById('edit-share-resource-type-text').textContent = 
+            resourceType === 'carpeta' ? 'Carpeta' : 'Archivo';
+          
+          // Actualizar icono
+          const icon = document.getElementById('edit-share-icon');
+          if (resourceType === 'carpeta') {
+            icon.className = 'fas fa-folder';
+          } else {
+            icon.className = 'fas fa-file';
+          }
+          
+          // Cargar lista de compartidos para este recurso
+          await loadSharesList(share.resource_id, resourceType);
+          
+          // Ocultar panel de agregar
+          document.getElementById('add-share-panel').style.display = 'none';
+          
+          // Mostrar modal
+          document.getElementById('edit-share-modal-overlay').style.display = 'flex';
+        }
+      } catch (error) {
+        console.error('Error loading share data:', error);
+        showError('Error al cargar datos de la compartición');
+      }
+    }
+    
+    // Cerrar modal de edición
+    function closeEditShareModal() {
+      document.getElementById('edit-share-modal-overlay').style.display = 'none';
+      currentEditingShare = null;
+      currentResourceId = null;
+      currentResourceType = null;
+      currentResourceName = null;
+      selectedShareTarget = null;
+    }
+
+    // Cargar lista de compartidos para un recurso
+    async function loadSharesList(resourceId, resourceType) {
+      try {
+        const response = await fetch(`/biblioteca/public/index.php/sharing/list-by-resource?resource_id=${resourceId}&resource_type=${resourceType}`, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
+        
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.shares) {
+          renderSharesList(data.shares);
+        } else {
+          document.getElementById('shares-list').innerHTML = 
+            '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">No hay usuarios o grupos con acceso a este recurso</div>';
+        }
+      } catch (error) {
+        console.error('Error loading shares list:', error);
+        document.getElementById('shares-list').innerHTML = 
+          '<div style="text-align: center; padding: 20px; color: #dc3545;">Error al cargar la lista de compartidos</div>';
+      }
+    }
+
+    // Renderizar lista de compartidos
+    function renderSharesList(shares) {
+      const container = document.getElementById('shares-list');
+      
+      if (shares.length === 0) {
+        container.innerHTML = 
+          '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">No hay usuarios o grupos con acceso a este recurso</div>';
+        return;
+      }
+      
+      let html = '';
+      shares.forEach(share => {
+        const isGroup = share.tipo_comparticion === 'grupo';
+        const icon = isGroup ? 'fas fa-users' : 'fas fa-user';
+        const typeText = isGroup ? 'Grupo' : 'Usuario';
+        const expiryText = share.fecha_expiracion ? 
+          new Date(share.fecha_expiracion).toLocaleDateString() : 'Sin límite';
+        
+        html += `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+              <i class="${icon}" style="color: var(--primary-color); font-size: 18px;"></i>
+              <div style="flex: 1;">
+                <div style="font-weight: 600; color: var(--text-primary);">${share.nombre}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">
+                  ${typeText} • Permiso: ${getPermissionText(share.permiso)} • Expira: ${expiryText}
+                </div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+                  ${share.puede_descargar == 1 ? '📥' : '🚫'} ${share.puede_imprimir == 1 ? '🖨️' : '🚫'} ${share.puede_copiar == 1 ? '📋' : '🚫'}
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button onclick="editIndividualShare(${share.share_id}, '${share.permiso}', '${share.fecha_expiracion || ''}', ${share.puede_descargar}, ${share.puede_imprimir}, ${share.puede_copiar})" 
+                      style="padding: 4px 8px; background: var(--primary-color); color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="removeShareFromList(${share.share_id}, '${currentResourceType}', '${share.nombre}')" 
+                      style="padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    // Obtener texto de permiso
+    function getPermissionText(permission) {
+      switch(permission) {
+        case 'lector': return '👁️ Lector';
+        case 'editor': return '✏️ Editor';
+        case 'propietario': return '👑 Propietario';
+        default: return permission;
+      }
+    }
+
+    // Mostrar panel para agregar usuario/grupo
+    function showAddShareDialog() {
+      document.getElementById('add-share-panel').style.display = 'block';
+      document.getElementById('search-share-input').value = '';
+      document.getElementById('search-share-results').style.display = 'none';
+      document.getElementById('selected-share-preview').style.display = 'none';
+      document.getElementById('new-share-options').style.display = 'none';
+      selectedShareTarget = null;
+    }
+
+    // Ocultar panel para agregar usuario/grupo
+    function hideAddShareDialog() {
+      document.getElementById('add-share-panel').style.display = 'none';
+    }
+
+    // Buscar usuarios y grupos
+    async function searchUsersAndGroups() {
+      const query = document.getElementById('search-share-input').value.trim();
+      const resultsContainer = document.getElementById('search-share-results');
+      
+      if (query.length < 2) {
+        resultsContainer.style.display = 'none';
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/biblioteca/public/index.php/sharing/search-users-groups?q=${encodeURIComponent(query)}`, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
+        
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.results && data.results.length > 0) {
+          let html = '';
+          data.results.forEach(result => {
+            const icon = result.type === 'group' ? 'fas fa-users' : 'fas fa-user';
+            const typeText = result.type === 'group' ? 'Grupo' : 'Usuario';
+            const memberInfo = result.type === 'group' && result.member_count ? 
+              ` (${result.member_count} miembros)` : '';
+            
+            html += `
+              <div onclick="selectShareTarget('${result.type}', ${result.id}, '${result.name}')" 
+                   style="padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; transition: background 0.2s;"
+                   onmouseover="this.style.background='var(--hover-bg)'" 
+                   onmouseout="this.style.background='transparent'">
+                <i class="${icon}" style="color: var(--primary-color);"></i>
+                <div>
+                  <div style="font-weight: 600; color: var(--text-primary);">${result.name}</div>
+                  <div style="font-size: 12px; color: var(--text-secondary);">${typeText}${memberInfo}</div>
+                </div>
+              </div>
+            `;
+          });
+          
+          resultsContainer.innerHTML = html;
+          resultsContainer.style.display = 'block';
+        } else {
+          resultsContainer.innerHTML = '<div style="padding: 10px; text-align: center; color: var(--text-secondary);">No se encontraron resultados</div>';
+          resultsContainer.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error searching users/groups:', error);
+        resultsContainer.innerHTML = '<div style="padding: 10px; text-align: center; color: #dc3545;">Error en la búsqueda</div>';
+        resultsContainer.style.display = 'block';
+      }
+    }
+
+    // Seleccionar objetivo para compartir
+    function selectShareTarget(type, id, name) {
+      selectedShareTarget = { type, id, name };
+      
+      // Ocultar resultados de búsqueda
+      document.getElementById('search-share-results').style.display = 'none';
+      
+      // Mostrar vista previa
+      const preview = document.getElementById('selected-share-preview');
+      const icon = type === 'group' ? 'fas fa-users' : 'fas fa-user';
+      const typeText = type === 'group' ? 'Grupo' : 'Usuario';
+      
+      preview.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <i class="${icon}" style="color: var(--primary-color); font-size: 18px;"></i>
+          <div>
+            <div style="font-weight: 600; color: var(--text-primary);">${name}</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">${typeText} seleccionado</div>
+          </div>
+          <button onclick="clearSelectedTarget()" 
+                  style="margin-left: auto; background: transparent; border: none; color: var(--text-secondary); cursor: pointer;">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      `;
+      
+      preview.style.display = 'block';
+      
+      // Mostrar opciones de permisos
+      document.getElementById('new-share-options').style.display = 'block';
+      
+      // Resetear valores por defecto
+      document.getElementById('new-share-permission').value = 'lector';
+      document.getElementById('new-share-expiry').value = '';
+      document.getElementById('new-share-can-download').checked = true;
+      document.getElementById('new-share-can-print').checked = true;
+      document.getElementById('new-share-can-copy').checked = true;
+    }
+
+    // Limpiar selección
+    function clearSelectedTarget() {
+      selectedShareTarget = null;
+      document.getElementById('selected-share-preview').style.display = 'none';
+      document.getElementById('new-share-options').style.display = 'none';
+    }
+
+    // Agregar nuevo compartido
+    async function addNewShare() {
+      if (!selectedShareTarget || !currentResourceId || !currentResourceType) {
+        showError('Por favor selecciona un usuario o grupo');
+        return;
+      }
+      
+      try {
+        const formData = new FormData();
+        formData.append('resource_id', currentResourceId);
+        formData.append('resource_type', currentResourceType);
+        formData.append('target_type', selectedShareTarget.type);
+        formData.append('target_id', selectedShareTarget.id);
+        formData.append('permission', document.getElementById('new-share-permission').value);
+        formData.append('expiry_date', document.getElementById('new-share-expiry').value || '');
+        formData.append('can_download', document.getElementById('new-share-can-download').checked ? 1 : 0);
+        formData.append('can_print', document.getElementById('new-share-can-print').checked ? 1 : 0);
+        formData.append('can_copy', document.getElementById('new-share-can-copy').checked ? 1 : 0);
+        formData.append('_csrf', document.querySelector('input[name="_csrf"]').value);
+        
+        const response = await fetch('/biblioteca/public/index.php/sharing/add-to-resource', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showSuccess('Acceso agregado exitosamente');
+          // Recargar lista de compartidos
+          await loadSharesList(currentResourceId, currentResourceType);
+          // Limpiar formulario
+          clearSelectedTarget();
+          hideAddShareDialog();
+        } else {
+          showError(data.error || 'Error al agregar acceso');
+        }
+      } catch (error) {
+        console.error('Error adding share:', error);
+        showError('Error al agregar acceso');
+      }
+    }
+
+    // Editar compartido individual (modal simple)
+    function editIndividualShare(shareId, currentPermission, currentExpiry, canDownload, canPrint, canCopy) {
+      const permission = prompt('Permiso (lector/editor/propietario):', currentPermission);
+      if (!permission) return;
+      
+      const expiry = prompt('Fecha de expiración (YYYY-MM-DD, vacío para sin límite):', currentExpiry);
+      
+      const download = confirm('¿Permitir descargas?');
+      const print = confirm('¿Permitir impresión?');
+      const copy = confirm('¿Permitir copia?');
+      
+      updateSharePermissions(shareId, permission, expiry, download ? 1 : 0, print ? 1 : 0, copy ? 1 : 0);
+    }
+
+    // Actualizar permisos de un compartido
+    async function updateSharePermissions(shareId, permission, expiry, canDownload, canPrint, canCopy) {
+      try {
+        const formData = new FormData();
+        formData.append('share_id', shareId);
+        formData.append('permission', permission);
+        formData.append('expiry_date', expiry || '');
+        formData.append('can_download', canDownload);
+        formData.append('can_print', canPrint);
+        formData.append('can_copy', canCopy);
+        formData.append('_csrf', document.querySelector('input[name="_csrf"]').value);
+        
+        const response = await fetch('/biblioteca/public/index.php/sharing/update', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showSuccess('Permisos actualizados exitosamente');
+          await loadSharesList(currentResourceId, currentResourceType);
+        } else {
+          showError(data.error || 'Error al actualizar permisos');
+        }
+      } catch (error) {
+        console.error('Error updating permissions:', error);
+        showError('Error al actualizar permisos');
+      }
+    }
+
+    // Eliminar compartido de la lista
+    async function removeShareFromList(shareId, resourceType, name) {
+      if (!confirm(`¿Estás seguro de que deseas revocar el acceso de "${name}"?`)) {
+        return;
+      }
+      
+      try {
+        const formData = new FormData();
+        formData.append('share_id', shareId);
+        formData.append('resource_type', resourceType);
+        formData.append('_csrf', document.querySelector('input[name="_csrf"]').value);
+        
+        const response = await fetch('/biblioteca/public/index.php/sharing/remove', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showSuccess('Acceso revocado exitosamente');
+          await loadSharesList(currentResourceId, currentResourceType);
+        } else {
+          showError(data.error || 'Error al revocar acceso');
+        }
+      } catch (error) {
+        console.error('Error removing share:', error);
+        showError('Error al revocar acceso');
+      }
+    }
+    
+    // Guardar cambios de permisos
+    async function saveSharePermissions() {
+      try {
+        const shareId = document.getElementById('edit-share-id').value;
+        const resourceType = document.getElementById('edit-share-resource-type').value;
+        const permission = document.getElementById('edit-share-permission').value;
+        const expiryDate = document.getElementById('edit-share-expiry').value;
+        const canDownload = document.getElementById('edit-share-can-download').checked ? 1 : 0;
+        const canPrint = document.getElementById('edit-share-can-print').checked ? 1 : 0;
+        const canCopy = document.getElementById('edit-share-can-copy').checked ? 1 : 0;
+        
+        const formData = new FormData();
+        formData.append('share_id', shareId);
+        formData.append('resource_type', resourceType);
+        formData.append('permission', permission);
+        formData.append('expiry_date', expiryDate || '');
+        formData.append('can_download', canDownload);
+        formData.append('can_print', canPrint);
+        formData.append('can_copy', canCopy);
+        formData.append('_csrf', document.querySelector('input[name="_csrf"]').value);
+        
+        const response = await fetch('/biblioteca/public/index.php/sharing/update', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showSuccess('Permisos actualizados exitosamente');
+          closeEditShareModal();
+          loadMyShares(); // Recargar la tabla
+        } else {
+          showError(data.error || 'Error al actualizar permisos');
+        }
+      } catch (error) {
+        console.error('Error saving permissions:', error);
+        showError('Error al guardar los cambios');
+      }
+    }
+    
+    // Cerrar modal al hacer clic fuera
+    document.addEventListener('DOMContentLoaded', function() {
+      const editShareOverlay = document.getElementById('edit-share-modal-overlay');
+      if (editShareOverlay) {
+        editShareOverlay.addEventListener('click', function(e) {
+          if (e.target === editShareOverlay) {
+            closeEditShareModal();
+          }
+        });
+      }
+    });
+    
+    // Gestión de selección múltiple de compartidos
+    function toggleAllShares(checked) {
+      const checkboxes = document.querySelectorAll('.share-checkbox');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = checked;
+      });
+      updateShareSelection();
+    }
+    
+    function updateShareSelection() {
+      const checkboxes = document.querySelectorAll('.share-checkbox:checked');
+      const count = checkboxes.length;
+      const bulkActionsBar = document.getElementById('bulk-actions-bar');
+      const selectedCountSpan = document.getElementById('selected-count');
+      const selectAllCheckbox = document.getElementById('select-all-shares');
+      
+      if (count > 0) {
+        bulkActionsBar.style.display = 'flex';
+        selectedCountSpan.textContent = `${count} seleccionado${count > 1 ? 's' : ''}`;
+      } else {
+        bulkActionsBar.style.display = 'none';
+      }
+      
+      // Actualizar estado del checkbox "seleccionar todo"
+      const totalCheckboxes = document.querySelectorAll('.share-checkbox').length;
+      if (selectAllCheckbox) {
+        selectAllCheckbox.checked = count === totalCheckboxes && count > 0;
+        selectAllCheckbox.indeterminate = count > 0 && count < totalCheckboxes;
+      }
+    }
+    
+    function clearShareSelection() {
+      const checkboxes = document.querySelectorAll('.share-checkbox');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      updateShareSelection();
+    }
+    
+    // Revocar compartidos seleccionados
+    async function revokeSelectedShares() {
+      const checkboxes = document.querySelectorAll('.share-checkbox:checked');
+      
+      if (checkboxes.length === 0) {
+        showInfo('No hay compartidos seleccionados');
+        return;
+      }
+      
+      const resourceNames = Array.from(checkboxes).map(cb => cb.dataset.resourceName);
+      const confirmMessage = checkboxes.length === 1 
+        ? `¿Estás seguro de que deseas revocar el acceso a "${resourceNames[0]}"?`
+        : `¿Estás seguro de que deseas revocar el acceso a ${checkboxes.length} recursos?\n\n${resourceNames.slice(0, 5).join('\n')}${checkboxes.length > 5 ? '\n...' : ''}`;
+      
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+      
+      try {
+        let successCount = 0;
+        let errorCount = 0;
+        const errors = [];
+        
+        // Mostrar progreso
+        const totalToRevoke = checkboxes.length;
+        showInfo(`Revocando ${totalToRevoke} compartido${totalToRevoke > 1 ? 's' : ''}...`);
+        
+        for (const checkbox of checkboxes) {
+          const shareId = checkbox.dataset.shareId;
+          const resourceType = checkbox.dataset.resourceType;
+          
+          try {
+            const formData = new FormData();
+            formData.append('share_id', shareId);
+            formData.append('resource_type', resourceType);
+            formData.append('_csrf', document.querySelector('input[name="_csrf"]').value);
+            
+            const response = await fetch('/biblioteca/public/index.php/sharing/remove', {
+              method: 'POST',
+              body: formData,
+              credentials: 'same-origin'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+              successCount++;
+            } else {
+              errorCount++;
+              errors.push(`${checkbox.dataset.resourceName}: ${data.error || 'Error desconocido'}`);
+            }
+          } catch (error) {
+            errorCount++;
+            errors.push(`${checkbox.dataset.resourceName}: Error de conexión`);
+            console.error('Error removing share:', error);
+          }
+        }
+        
+        // Mostrar resultado
+        if (successCount > 0 && errorCount === 0) {
+          showSuccess(`${successCount} compartido${successCount > 1 ? 's revocados' : ' revocado'} exitosamente`);
+        } else if (successCount > 0 && errorCount > 0) {
+          showInfo(`${successCount} revocados exitosamente, ${errorCount} con errores`);
+          console.error('Errores:', errors);
+        } else {
+          showError(`Error al revocar compartidos: ${errors.join(', ')}`);
+        }
+        
+        // Recargar la lista
+        loadMyShares();
+        
+      } catch (error) {
+        console.error('Error in bulk revoke:', error);
+        showError('Error al procesar la revocación múltiple');
+      }
+    }
+    
+    // Eliminar/Revocar un compartido individual
+    async function removeShare(shareId, resourceType, resourceName) {
+      console.log('removeShare called:', {shareId, resourceType, resourceName});
+      
+      if (!confirm(`¿Estás seguro de que deseas revocar el acceso a "${resourceName}"?`)) {
+        return;
+      }
+      
+      try {
+        const csrfInput = document.querySelector('input[name="_csrf"]');
+        if (!csrfInput) {
+          console.error('CSRF token not found in page');
+          showError('Error: Token de seguridad no encontrado');
+          return;
+        }
+        
+        const formData = new FormData();
+        formData.append('share_id', shareId);
+        formData.append('resource_type', resourceType);
+        formData.append('_csrf', csrfInput.value);
+        
+        console.log('Sending request to remove share...');
+        
+        const response = await fetch('/biblioteca/public/index.php/sharing/remove', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+        
+        console.log('Response status:', response.status);
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        if (data.success) {
+          showSuccess('Acceso revocado exitosamente');
+          loadMyShares(); // Recargar la lista
+        } else {
+          showError(data.error || 'Error al revocar acceso');
+        }
+      } catch (error) {
+        console.error('Error removing share:', error);
+        showError('Error al revocar acceso: ' + error.message);
+      }
+    }
+    
     // Update sidebar selection
     function updateSidebarSelection(type, folderId = null) {
       // Remove active class from all sidebar items
@@ -2730,6 +3804,11 @@
       
       if (type === 'shared') {
         document.getElementById('shared-with-me-item').classList.add('active');
+      } else if (type === 'my-shares') {
+        const mySharesItem = document.getElementById('my-shares-item');
+        if (mySharesItem) {
+          mySharesItem.classList.add('active');
+        }
       } else if (type === 'drive') {
         // Select the main DRIVE item (folder 0)
         const driveItem = document.querySelector('[data-folder="0"]');
@@ -3009,7 +4088,11 @@
       }
 
       try {
-        const response = await fetch('/biblioteca/public/index.php/drive/breadcrumb?id=' + folderId);
+        const response = await fetch('/biblioteca/public/index.php/drive/breadcrumb?id=' + folderId, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
         const data = await response.json();
         
         let html = '<a href="#" onclick="navigateToFolder(0)">Mi Biblioteca</a>';
@@ -4588,11 +5671,15 @@ ${percentage >= 90 ? '⚠️ Considera eliminar archivos innecesarios o contacta
       // Initialize column view if selected
       if (view === 'columns') {
         setTimeout(() => {
-          if (!isSharedWithMeView) {
+          if (!isSharedWithMeView && !isMySharesView) {
             initializeColumnView();
           } else {
-            // Show message for shared with me in column view
-            showColumnViewMessage('La vista de columnas no está disponible para "Compartido conmigo".<br>Usa las vistas de cuadrícula o lista.');
+            // Show message for special views in column view
+            if (isSharedWithMeView) {
+              showColumnViewMessage('La vista de columnas no está disponible para "Compartido conmigo".<br>Usa las vistas de cuadrícula o lista.');
+            } else if (isMySharesView) {
+              showColumnViewMessage('La vista de columnas no está disponible para "Mis Compartidos".<br>Usa las vistas de cuadrícula o lista.');
+            }
           }
         }, 100);
       }
@@ -6210,6 +7297,9 @@ ${percentage >= 90 ? '⚠️ Considera eliminar archivos innecesarios o contacta
         
         // Fetch file information
         const response = await fetch('/biblioteca/public/index.php/drive/file-info?id=' + fileId, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          },
           credentials: 'include'  // Include cookies for authentication
         });
         console.log('Response status:', response.status, response.statusText);
@@ -6558,6 +7648,9 @@ ${percentage >= 90 ? '⚠️ Considera eliminar archivos innecesarios o contacta
         console.log('DEBUG: Text file URL:', textUrl);
         
         fetch(textUrl, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          },
           credentials: 'include'
         })
           .then(response => {
