@@ -143,6 +143,15 @@ class UserRepository
         return array_map([$this, 'map'], $rows);
     }
 
+    /**
+     * Actualizar fecha de último acceso del usuario
+     */
+    public function updateLastAccess(int $id): void
+    {
+        $stmt = $this->db->prepare('UPDATE usuarios SET fecha_ultimo_acceso = NOW() WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+    }
+
     private function map(array $row): User
     {
         $u = new User();

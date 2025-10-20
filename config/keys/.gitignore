@@ -1,0 +1,12 @@
+# Ignorar todas las claves
+*.pem
+*.key
+*.pub
+*.crt
+*.p12
+*.pfx
+
+# Permitir este archivo y el README
+!.gitignore
+!README.md
+

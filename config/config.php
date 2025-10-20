@@ -10,6 +10,14 @@ return [
         // false = usa password_verify (Argon2/bcrypt)
         'plaintext_passwords' => true,
     ],
+    'jwt' => [
+        // Ruta a la clave pública para verificar JWT (RS256)
+        'public_key' => __DIR__ . '/../config/keys/orion.pem',
+        // Verificar firma JWT (true = verificar, false = solo decodificar)
+        'verify_signature' => false,
+        // Permitir auto-creación de usuarios desde JWT
+        'auto_create_users' => true,
+    ],
     'session' => [
         'name' => 'BIBLIO_SESSID',
         'cookie_secure' => false,
