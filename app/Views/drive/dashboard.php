@@ -9,15 +9,37 @@
   <script>
     (function() {
       try {
-        // Intentar obtener el token de localStorage y guardarlo en cookie
+        // Obtener el token de localStorage
         const token = localStorage.getItem('token');
+        
         if (token) {
+          // Verificar si ya tenemos el token en la URL o en la cookie
+          const urlParams = new URLSearchParams(window.location.search);
+          const tokenInUrl = urlParams.get('jwt_token');
+          
+          // Verificar si tenemos la cookie
+          const hasCookie = document.cookie.split(';').some(c => c.trim().startsWith('orion_jwt_token='));
+          
+          // Si no tenemos el token en la URL ni en la cookie, recargar con el token
+          if (!tokenInUrl && !hasCookie) {
+            console.log('🔄 Recargando página con token JWT en URL...');
+            
+            // Agregar token a la URL y recargar
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('jwt_token', token);
+            window.location.href = newUrl.toString();
+            return; // Detener ejecución
+          }
+          
+          // Si llegamos aquí, ya tenemos el token, guardarlo en cookie
           const expires = new Date(Date.now() + 4 * 60 * 60 * 1000).toUTCString();
           document.cookie = `orion_jwt_token=${token}; expires=${expires}; path=/; SameSite=Lax`;
           console.log('🔐 Token Orion copiado a cookie para autenticación del servidor');
+        } else {
+          console.log('⚠️ No se encontró token en localStorage');
         }
       } catch (e) {
-        console.warn('⚠️ No se pudo copiar token a cookie:', e);
+        console.error('❌ Error en setup de token:', e);
       }
     })();
   </script>

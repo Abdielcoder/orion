@@ -270,8 +270,19 @@ class JwtAuthMiddleware
         
         // 5. Intentar obtener desde parámetros GET
         if (isset($_GET['jwt_token']) && !empty($_GET['jwt_token'])) {
+            $token = trim($_GET['jwt_token']);
             error_log("JWT Auth - Token encontrado en parámetro GET: jwt_token");
-            return trim($_GET['jwt_token']);
+            
+            // Guardar token en cookie para futuras peticiones
+            setcookie('orion_jwt_token', $token, [
+                'expires' => time() + (4 * 60 * 60), // 4 horas
+                'path' => '/',
+                'secure' => false,
+                'httponly' => false,
+                'samesite' => 'Lax'
+            ]);
+            
+            return $token;
         }
         
         // 6. Intentar obtener desde parámetros POST
