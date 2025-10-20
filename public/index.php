@@ -108,9 +108,9 @@ $router->add('POST', '/dev/test-upload', [DevController::class, 'testUpload'], [
 $router->add('GET', '/dev/test-user-settings', [DevController::class, 'testUserSettings'], [SecurityHeadersMiddleware::class]);
 $router->add('GET', '/dev/test-session', [DevController::class, 'testSession'], [SecurityHeadersMiddleware::class]);
 
-// Drive - Con autenticación JWT
-$router->add('GET', '/drive', [DriveController::class, 'dashboard'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/upload', [DriveController::class, 'upload'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class, RateLimitMiddleware::class]);
+// Drive - Con autenticación JWT (sin CSRF para evitar bloqueos)
+$router->add('GET', '/drive', [DriveController::class, 'dashboard'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/upload', [DriveController::class, 'upload'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, RateLimitMiddleware::class]);
 $router->add('GET', '/drive/list', [DriveController::class, 'apiList'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 $router->add('GET', '/drive/shared-with-me', [DriveController::class, 'sharedWithMe'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 $router->add('GET', '/drive/shared-folder-contents', [DriveController::class, 'sharedFolderContents'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
@@ -118,25 +118,25 @@ $router->add('GET', '/drive/file-info', [DriveController::class, 'getFileInfo'],
 $router->add('GET', '/drive/download', [DriveController::class, 'downloadFile'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 $router->add('GET', '/drive/preview', [DriveController::class, 'previewFile'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 $router->add('GET', '/drive/storage-quota', [DriveController::class, 'getStorageQuota'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/folder', [DriveController::class, 'createFolder'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/folder/rename', [DriveController::class, 'renameFolder'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/file/rename', [DriveController::class, 'renameFile'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/folder/move', [DriveController::class, 'moveFolder'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/file/move', [DriveController::class, 'moveFile'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/folder/delete', [DriveController::class, 'deleteFolder'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/file/delete', [DriveController::class, 'deleteFile'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/folder/label', [DriveController::class, 'setFolderLabel'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/folder/icon', [DriveController::class, 'setFolderIcon'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/folder', [DriveController::class, 'createFolder'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/folder/rename', [DriveController::class, 'renameFolder'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/file/rename', [DriveController::class, 'renameFile'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/folder/move', [DriveController::class, 'moveFolder'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/file/move', [DriveController::class, 'moveFile'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/folder/delete', [DriveController::class, 'deleteFolder'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/file/delete', [DriveController::class, 'deleteFile'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/folder/label', [DriveController::class, 'setFolderLabel'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/folder/icon', [DriveController::class, 'setFolderIcon'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 $router->add('GET', '/drive/breadcrumb', [DriveController::class, 'getBreadcrumb'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 
 // Background settings - Con autenticación JWT
 $router->add('GET', '/drive/background', [DriveController::class, 'getBackgroundSettings'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/background/color', [DriveController::class, 'setBackgroundColor'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/background/image', [DriveController::class, 'setBackgroundImage'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/drive/background/clear', [DriveController::class, 'clearBackground'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/background/color', [DriveController::class, 'setBackgroundColor'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/background/image', [DriveController::class, 'setBackgroundImage'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/drive/background/clear', [DriveController::class, 'clearBackground'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 
 // Sharing (basic) - Con autenticación JWT
-$router->add('POST', '/share/create', [ShareController::class, 'createLink'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/share/create', [ShareController::class, 'createLink'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 $router->add('GET', '/s/{token}', [ShareController::class, 'open'], [SecurityHeadersMiddleware::class]);
 $router->add('POST', '/s/{token}', [ShareController::class, 'open'], [SecurityHeadersMiddleware::class]);
 
@@ -148,32 +148,32 @@ $router->add('GET', '/sharing/groups', [SharingController::class, 'getAvailableG
 $router->add('POST', '/sharing/revoke', [SharingController::class, 'revokeSharing'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 $router->add('GET', '/sharing/list/{resourceType}/{resourceId}', [SharingController::class, 'listSharings'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 $router->add('GET', '/sharing/my-shares', [SharingController::class, 'getMyShares'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/sharing/update', [SharingController::class, 'updateSharing'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, CsrfMiddleware::class]);
-$router->add('POST', '/sharing/remove', [SharingController::class, 'removeSharing'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, CsrfMiddleware::class]);
+$router->add('POST', '/sharing/update', [SharingController::class, 'updateSharing'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
+$router->add('POST', '/sharing/remove', [SharingController::class, 'removeSharing'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 
 // Nuevas rutas para gestión múltiple de compartidos
 $router->add('GET', '/sharing/list-by-resource', [SharingController::class, 'listByResource'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 $router->add('GET', '/sharing/search-users-groups', [SharingController::class, 'searchUsersGroups'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
-$router->add('POST', '/sharing/add-to-resource', [SharingController::class, 'addToResource'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, CsrfMiddleware::class]);
+$router->add('POST', '/sharing/add-to-resource', [SharingController::class, 'addToResource'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class]);
 
 // Admin - Gestión de Usuarios (solo para administradores con JWT)
-$router->add('GET', '/admin/users', [AdminUsersController::class, 'index'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
+$router->add('GET', '/admin/users', [AdminUsersController::class, 'index'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
 $router->add('GET', '/admin/users/api', [AdminUsersController::class, 'getUsers'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
-$router->add('POST', '/admin/users/create', [AdminUsersController::class, 'createUser'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
-$router->add('POST', '/admin/users/update', [AdminUsersController::class, 'updateUser'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
-$router->add('POST', '/admin/users/delete', [AdminUsersController::class, 'deleteUser'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
-$router->add('POST', '/admin/users/toggle-status', [AdminUsersController::class, 'toggleUserStatus'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
+$router->add('POST', '/admin/users/create', [AdminUsersController::class, 'createUser'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
+$router->add('POST', '/admin/users/update', [AdminUsersController::class, 'updateUser'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
+$router->add('POST', '/admin/users/delete', [AdminUsersController::class, 'deleteUser'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
+$router->add('POST', '/admin/users/toggle-status', [AdminUsersController::class, 'toggleUserStatus'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
 $router->add('GET', '/admin/users/search', [AdminUsersController::class, 'searchUsers'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
 
 // Admin - Gestión de Grupos (solo para administradores con JWT)
 $router->add('GET', '/admin/groups/api', [AdminGroupsController::class, 'getGroups'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
-$router->add('POST', '/admin/groups/create', [AdminGroupsController::class, 'createGroup'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
-$router->add('POST', '/admin/groups/update', [AdminGroupsController::class, 'updateGroup'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
-$router->add('POST', '/admin/groups/delete', [AdminGroupsController::class, 'deleteGroup'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
+$router->add('POST', '/admin/groups/create', [AdminGroupsController::class, 'createGroup'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
+$router->add('POST', '/admin/groups/update', [AdminGroupsController::class, 'updateGroup'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
+$router->add('POST', '/admin/groups/delete', [AdminGroupsController::class, 'deleteGroup'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
 $router->add('GET', '/admin/groups/members', [AdminGroupsController::class, 'getGroupMembers'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
 $router->add('GET', '/admin/groups/available-users', [AdminGroupsController::class, 'getAvailableUsers'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
-$router->add('POST', '/admin/groups/add-member', [AdminGroupsController::class, 'addMember'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
-$router->add('POST', '/admin/groups/remove-member', [AdminGroupsController::class, 'removeMember'], [SecurityHeadersMiddleware::class, CsrfMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
+$router->add('POST', '/admin/groups/add-member', [AdminGroupsController::class, 'addMember'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
+$router->add('POST', '/admin/groups/remove-member', [AdminGroupsController::class, 'removeMember'], [SecurityHeadersMiddleware::class, JwtAuthMiddleware::class, AdminMiddleware::class]);
 
 $router->dispatch();
 

@@ -21,14 +21,8 @@ class JwtAuthMiddleware
     
     public function handle(callable $next)
     {
-        // Verificar si ya hay una sesión activa (para evitar validar JWT en cada request)
-        $userId = Session::get('user_id');
-        $jwtValidated = Session::get('jwt_validated');
-        
-        if ($userId && $jwtValidated) {
-            error_log("JWT Auth - Sesión activa para usuario ID: {$userId}");
-            return $next();
-        }
+        // LIMPIAR TODO: Eliminar cookies, sesiones, cache
+        $this->clearAllAuth();
         
         // Obtener token del header x-token
         $token = $this->getTokenFromHeader();
@@ -73,7 +67,7 @@ class JwtAuthMiddleware
         
         error_log("JWT Auth - Usuario autenticado: {$user->email} (ID: {$user->id}, Rol: {$user->rol})");
         
-        // Establecer sesión con la lógica de negocio existente del usuario
+        // ESTABLECER SESIÓN LIMPIA con la lógica de negocio existente del usuario
         Session::regenerate();
         Session::set('user_id', $user->id);
         Session::set('user_role', $user->rol);
@@ -140,8 +134,39 @@ class JwtAuthMiddleware
         return null;
     }
     
-    // Método de auto-creación de usuarios eliminado
-    // Solo se permite acceso a usuarios existentes en la base de datos
+    /**
+     * Limpiar todas las autenticaciones, cookies, sesiones y cache
+     */
+    private function clearAllAuth(): void
+    {
+        // Limpiar sesión PHP
+        $_SESSION = [];
+        
+        // Destruir cookies de sesión
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000, 
+                $params['path'], $params['domain'], 
+                $params['secure'], $params['httponly']);
+        }
+        
+        // Destruir sesión actual
+        session_destroy();
+        
+        // Limpiar headers de cache
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        
+        // Limpiar variables de sesión específicas
+        unset($_SESSION['user_id']);
+        unset($_SESSION['user_role']);
+        unset($_SESSION['jwt_validated']);
+        unset($_SESSION['jwt_email']);
+        unset($_SESSION['jwt_bypass']);
+        
+        error_log("JWT Auth - Limpieza completa de autenticación realizada");
+    }
     
     /**
      * Respuesta de no autorizado
