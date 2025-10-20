@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Usuarios - Biblioteca Digital</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .info-box p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .user-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .user-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .user-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .user-email {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .user-role {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .role-admin {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .role-editor {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .btn-access {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-access:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .default-access {
+            text-align: center;
+            padding: 20px;
+            background: #fff3e0;
+            border-radius: 10px;
+            border: 2px solid #ff9800;
+        }
+
+        .default-access h3 {
+            color: #f57c00;
+            margin-bottom: 10px;
+        }
+
+        .default-access p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .btn-default {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+
+        .btn-default:hover {
+            box-shadow: 0 5px 20px rgba(255, 152, 0, 0.4);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            color: #666;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Prueba de Usuarios</h1>
+        <p class="subtitle">Biblioteca Digital - Sistema JWT</p>
+
+        <div class="info-box">
+            <h3>ℹ️ Información del Sistema</h3>
+            <p>
+                El sistema está configurado para autenticación JWT. Mientras Orion no envíe el token JWT en el header <code>x-token</code>, 
+                puedes acceder especificando el email del usuario mediante el parámetro <code>user_email</code>.
+            </p>
+        </div>
+
+        <div class="users-grid">
+            <div class="user-card">
+                <h3>👤 Abdiel Carrasco</h3>
+                <div class="user-email">desarrollo@rinorisk.com</div>
+                <span class="user-role role-admin">ADMINISTRADOR</span>
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">ID: 1 | Super Admin | Usuario por defecto</p>
+                <a href="index.php/drive?user_email=desarrollo@rinorisk.com" class="btn-access">
+                    🚀 Acceder como Abdiel
+                </a>
+            </div>
+
+            <div class="user-card">
+                <h3>👤 Gerente Marketing</h3>
+                <div class="user-email">gerente.mkt@rinorisk.com</div>
+                <span class="user-role role-editor">USUARIO EDITOR</span>
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">ID: 3 | Permisos de edición</p>
+                <a href="index.php/drive?user_email=gerente.mkt@rinorisk.com" class="btn-access">
+                    🚀 Acceder como Gerente
+                </a>
+            </div>
+
+            <div class="user-card">
+                <h3>👤 Apex Labs</h3>
+                <div class="user-email">apexlabssolutions@gmail.com</div>
+                <span class="user-role role-editor">USUARIO EDITOR</span>
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">ID: 4 | Permisos de edición</p>
+                <a href="index.php/drive?user_email=apexlabssolutions@gmail.com" class="btn-access">
+                    🚀 Acceder como Apex
+                </a>
+            </div>
+
+            <div class="user-card">
+                <h3>👤 Desarrollo General</h3>
+                <div class="user-email">desarrollo-general@rinorisk.com</div>
+                <span class="user-role role-admin">ADMINISTRADOR</span>
+                <p style="color: #666; font-size: 13px; margin-bottom: 15px;">ID: 5 | Super Admin | Acceso completo</p>
+                <a href="index.php/drive?user_email=desarrollo-general@rinorisk.com" class="btn-access">
+                    🚀 Acceder como Desarrollo
+                </a>
+            </div>
+        </div>
+
+        <div class="default-access">
+            <h3>⚠️ Acceso Sin Especificar Usuario</h3>
+            <p>Si accedes sin especificar un email, el sistema usará el usuario administrador por defecto (desarrollo@rinorisk.com)</p>
+            <a href="index.php/drive" class="btn-access btn-default">
+                🔓 Acceder sin especificar usuario
+            </a>
+        </div>
+
+        <div class="footer">
+            <p><strong>Nota:</strong> Una vez que Orion envíe el token JWT correctamente, el sistema usará automáticamente el usuario del token.</p>
+            <p style="margin-top: 10px;">Sistema de Biblioteca Digital | JWT Authentication | v2.0</p>
+        </div>
+    </div>
+</body>
+</html>
+
