@@ -22,8 +22,8 @@ return [
         'host' => getenv('DB_HOST') ?: 'localhost',
         'port' => (int)(getenv('DB_PORT') ?: 3306),
         'database' => getenv('DB_DATABASE') ?: 'biblioteca_digital',
-        'username' => getenv('DB_USERNAME') ?: 'root',
-        'password' => getenv('DB_PASSWORD') ?: '',
+        'username' => getenv('DB_USERNAME') ?: 'biblioteca',
+        'password' => getenv('DB_PASSWORD') ?: 'biblioteca123',
         'charset' => 'utf8mb4',
         'options' => [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
